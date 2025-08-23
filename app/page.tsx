@@ -1,103 +1,330 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [candidateDates, setCandidateDates] = useState<Array<{
+    date: string;
+    startTime: string;
+    endTime: string;
+  }>>([]);
+  const [customDate, setCustomDate] = useState("");
+  const [eventName, setEventName] = useState("");
+  const [description, setDescription] = useState("");
+  const [defaultStartTime, setDefaultStartTime] = useState("");
+  const [defaultEndTime, setDefaultEndTime] = useState("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  // 候補日を追加する関数
+  const addCandidateDate = (date: string) => {
+    if (date && !candidateDates.some(candidate => candidate.date === date)) {
+      setCandidateDates([...candidateDates, {
+        date,
+        startTime: defaultStartTime,
+        endTime: defaultEndTime
+      }]);
+    }
+  };
+  console.log(candidateDates);
+  // 候補日を削除する関数
+  const removeCandidateDate = (dateToRemove: string) => {
+    setCandidateDates(candidateDates.filter(candidate => candidate.date !== dateToRemove));
+  };
+
+  // 候補日の時間を更新する関数
+  const updateCandidateTime = (date: string, field: 'startTime' | 'endTime', value: string) => {
+    setCandidateDates(candidateDates.map(candidate => 
+      candidate.date === date 
+        ? { ...candidate, [field]: value }
+        : candidate
+    ));
+  };
+
+  // 今日の日付を取得
+  const getToday = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
+  // 明日の日付を取得
+  const getTomorrow = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  };
+
+  // 来週の日付を取得（7日後）
+  const getNextWeek = () => {
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    return nextWeek.toISOString().split('T')[0];
+  };
+
+  // 日付を日本語形式で表示
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return `${dateString} (今日)`;
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return `${dateString} (明日)`;
+    } else {
+      return dateString;
+    }
+  };
+  return (
+    <>
+      {/* ヘッダー */}
+      <header className="bg-white p-4 border-b">
+        <div className="flex items-center justify-between">
+          <div className="text-lg font-bold">新規イベント作成</div>
+        </div>
+      </header>
+
+      {/* メインコンテンツ */}
+      <main className="p-4 space-y-6">
+        {/* イベント名 */}
+        <div className="space-y-2">
+          <Label htmlFor="event-name" className="text-sm font-medium border-l-4 border-red-400 pl-2">
+            イベント名
+          </Label>
+          <p className="text-xs text-gray-500">例) お盆のテニスの開催予定</p>
+          <Input 
+            id="event-name"
+            placeholder="イベント名を入力してください"
+            value={eventName}
+            onChange={(e) => setEventName(e.target.value)}
+          />
+        </div>
+
+        {/* 説明文 */}
+        <div className="space-y-2">
+          <Label htmlFor="description" className="text-sm font-medium border-l-4 border-red-400 pl-2">
+            説明文
+          </Label>
+          <p className="text-xs text-gray-500">例) 門真市のテニスコートで試合形式で開催します</p>
+          <Textarea 
+            id="description"
+            placeholder="イベントの詳細を入力してください"
+            className="min-h-[100px]"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+
+        {/* 開催日時 */}
+        <div className="space-y-3">
+          <Label className="text-sm font-medium border-l-4 border-red-400 pl-2">
+            開催候補日時
+          </Label>
+          
+          {/* 候補日選択 */}
+          <div className="space-y-3">
+            <Label className="text-xs text-gray-500">
+              候補日
+            </Label>
+            
+            {/* クイック選択 */}
+            <div className="grid grid-cols-3 gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs"
+                onClick={() => addCandidateDate(getToday())}
+                title="今日の日付を候補日として追加"
+              >
+                今日を追加
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs"
+                onClick={() => addCandidateDate(getTomorrow())}
+                title="明日の日付を候補日として追加"
+              >
+                明日を追加
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs"
+                onClick={() => addCandidateDate(getNextWeek())}
+                title="来週の日付を候補日として追加"
+              >
+                来週を追加
+              </Button>
+            </div>
+            
+            {/* カスタム日付追加 */}
+            <div className="flex items-center gap-2">
+              <Input 
+                type="date"
+                placeholder="日付を選択"
+                className="flex-1"
+                value={customDate}
+                onChange={(e) => setCustomDate(e.target.value)}
+              />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs"
+                onClick={() => {
+                  addCandidateDate(customDate);
+                  setCustomDate("");
+                }}
+              >
+                追加
+              </Button>
+            </div>
+            
+            {/* 選択された候補日 */}
+            {candidateDates.length > 0 && (
+              <div className="space-y-3">
+                <div className="text-xs text-gray-500">選択された候補日:</div>
+                <div className="space-y-2">
+                  {candidateDates.map((candidate) => (
+                    <div key={candidate.date} className="border rounded-lg p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{formatDate(candidate.date)}</span>
+                        <button 
+                          className="text-red-500 hover:text-red-700 text-sm"
+                          onClick={() => removeCandidateDate(candidate.date)}
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1 w-[85%]">
+                          <Label className="text-xs text-gray-500">開始時間</Label>
+                          <Input 
+                            type="time"
+                            value={candidate.startTime}
+                            onChange={(e) => updateCandidateTime(candidate.date, 'startTime', e.target.value)}
+                            className="text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1 w-[85%]">
+                          <Label className="text-xs text-gray-500">終了時間</Label>
+                          <Input 
+                            type="time"
+                            value={candidate.endTime}
+                            onChange={(e) => updateCandidateTime(candidate.date, 'endTime', e.target.value)}
+                            className="text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* デフォルト時間設定 */}
+          <div className="space-y-2 pt-4">
+            <Label className="text-xs text-gray-500">
+              デフォルト時間（新規候補日に適用）
+            </Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center py-2">
+                  <span className="text-xs text-gray-500 pl-4">開始</span>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs h-6 px-2 bg-blue-50 hover:bg-blue-100 ml-4"
+                    onClick={() => {
+                      const now = new Date();
+                      const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                      setDefaultStartTime(timeString);
+                    }}
+                    title="現在時刻を設定"
+                  >
+                    🕐 現在時刻
+                  </Button>
+                </div>
+                <Input 
+                  type="time"
+                  placeholder="開始時間"
+                  value={defaultStartTime}
+                  onChange={(e) => setDefaultStartTime(e.target.value)}
+                  className="w-[85%] mx-auto"
+                />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center py-2">
+                  <span className="text-xs text-gray-500 pl-4">終了</span>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs h-6 px-2 bg-green-50 hover:bg-green-100 ml-4"
+                    onClick={() => {
+                      if (defaultStartTime) {
+                        const [hours, minutes] = defaultStartTime.split(':');
+                        const endTime = new Date();
+                        endTime.setHours(parseInt(hours) + 1, parseInt(minutes));
+                        const timeString = `${endTime.getHours().toString().padStart(2, '0')}:${endTime.getMinutes().toString().padStart(2, '0')}`;
+                        setDefaultEndTime(timeString);
+                      }
+                    }}
+                    title="開始時刻から1時間後を設定"
+                  >
+                    ⏰ 1時間後
+                  </Button>
+                </div>
+                <Input 
+                  type="time"
+                  placeholder="終了時間"
+                  value={defaultEndTime}
+                  onChange={(e) => setDefaultEndTime(e.target.value)}
+                  className="w-[85%] mx-auto"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* アクションボタン */}
+        <div className="flex gap-3 pt-4">
+          <Button 
+            variant="outline" 
+            className="flex-1"
+            onClick={() => {
+              console.log("保存されたデータ:", {
+                eventName,
+                description,
+                candidateDates,
+                defaultStartTime,
+                defaultEndTime,
+              });
+              alert("イベントが保存されました！");
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            保存
+          </Button>
+          <Button 
+            className="flex-1"
+            onClick={() => {
+              console.log("プレビューデータ:", {
+                eventName,
+                description,
+                candidateDates,
+                defaultStartTime,
+                defaultEndTime,
+              });
+              alert(candidateDates);
+            }}
           >
-            Read our docs
-          </a>
+            プレビュー
+          </Button>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    </>
   );
 }

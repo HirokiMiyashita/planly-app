@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,58 @@ export default function Home() {
   const [description, setDescription] = useState("");
   const [defaultStartTime, setDefaultStartTime] = useState("");
   const [defaultEndTime, setDefaultEndTime] = useState("");
+  const [lineUserName, setLineUserName] = useState("");
+  const [lineUserId, setLineUserId] = useState("");
+
+  // LINE内ブラウザかどうかを判定
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isLine = userAgent.includes('line');
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessToken = urlParams.get('access_token');
+    
+    if (accessToken) {
+      // アクセストークンがある場合はユーザー情報を取得
+      fetchLineUserInfo(accessToken);
+    } else if (isLine) {
+      // LINE内ブラウザでアクセストークンがない場合は自動的にログインページにリダイレクト
+      window.location.href = getLineLoginUrl();
+    }
+  }, []);
+
+  // LINE APIからユーザー情報を取得
+  const fetchLineUserInfo = async (accessToken: string) => {
+    try {
+      const response = await fetch('/api/line/user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ accessToken }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setLineUserName(data.userName);
+        setLineUserId(data.userId);
+      } else {
+        console.error('Failed to get user info:', data.message);
+      }
+    } catch (error) {
+      console.error('LINE user info fetch error:', error);
+    }
+  };
+
+  // LINE Login URLを生成
+  const getLineLoginUrl = () => {
+    const clientId = '2007979395';
+    const redirectUri = encodeURIComponent('https://5d9ea260ba14.ngrok-free.app/api/line/callback');
+    const state = Math.random().toString(36).substring(7);
+    
+    return `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile%20openid`;
+  };
 
   // 候補日を追加する関数
   const addCandidateDate = (date: string) => {
@@ -84,6 +136,19 @@ export default function Home() {
       <header className="bg-white p-4 border-b">
         <div className="flex items-center justify-between">
           <div className="text-lg font-bold">新規イベント作成</div>
+          <div className="flex items-center gap-2">
+            {lineUserName ? (
+              <span className="text-sm text-gray-600">ようこそ、{lineUserName}さん</span>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.location.href = getLineLoginUrl()}
+              >
+                LINEでログイン
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -295,15 +360,46 @@ export default function Home() {
           <Button 
             variant="outline" 
             className="flex-1"
-            onClick={() => {
-              console.log("保存されたデータ:", {
-                eventName,
-                description,
-                candidateDates,
-                defaultStartTime,
-                defaultEndTime,
-              });
-              alert("イベントが保存されました！");
+            onClick={async () => {
+              try {
+                if (!lineUserId) {
+                  alert('LINEログインが必要です。先にLINEでログインしてください。');
+                  return;
+                }
+                
+                const response = await fetch('/api/events', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    eventName,
+                    description,
+                    candidateDates,
+                    defaultStartTime,
+                    defaultEndTime,
+                    createdBy: lineUserId,
+                  }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                  alert('イベントが正常に保存されました！');
+                  // フォームをリセット
+                  setEventName('');
+                  setDescription('');
+                  setCandidateDates([]);
+                  setDefaultStartTime('');
+                  setDefaultEndTime('');
+                  setCustomDate('');
+                } else {
+                  alert('保存に失敗しました: ' + data.message);
+                }
+              } catch (error) {
+                console.error('保存エラー:', error);
+                alert('保存中にエラーが発生しました');
+              }
             }}
           >
             保存
@@ -318,7 +414,7 @@ export default function Home() {
                 defaultStartTime,
                 defaultEndTime,
               });
-              alert(candidateDates);
+              alert('プレビュー機能です！');
             }}
           >
             プレビュー

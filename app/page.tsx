@@ -64,7 +64,7 @@ export default function Home() {
   // LINE Login URLを生成
   const getLineLoginUrl = () => {
     const clientId = '2007979395';
-    const redirectUri = encodeURIComponent('https://5d9ea260ba14.ngrok-free.app/api/line/callback');
+    const redirectUri = encodeURIComponent('https://planly-app.vercel.app/api/line/callback');
     const state = Math.random().toString(36).substring(7);
     
     return `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile%20openid`;

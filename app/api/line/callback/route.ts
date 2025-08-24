@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code: code,
-        redirect_uri: 'https://5d9ea260ba14.ngrok-free.app/api/line/callback',
+        redirect_uri: 'https://planly-app.vercel.app/api/line/callback',
         client_id: '2007979395',
         client_secret: '873845d7b4564e86374461b9220842b8',
       }),
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     const tokenData = await tokenResponse.json();
 
     // フロントエンドにリダイレクト（アクセストークン付き）
-    const redirectUrl = `https://5d9ea260ba14.ngrok-free.app?access_token=${tokenData.access_token}`;
+    const redirectUrl = `https://planly-app.vercel.app/?access_token=${tokenData.access_token}`;
     
     return NextResponse.redirect(redirectUrl);
 

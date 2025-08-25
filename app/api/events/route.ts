@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
+import { getServerSession } from 'next-auth';
 
 // Neon Database接続
 const sql = neon(process.env.DATABASE_URL!);
@@ -7,20 +8,22 @@ const sql = neon(process.env.DATABASE_URL!);
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventName, description, candidateDates, defaultStartTime, defaultEndTime, createdBy } = body;
-    // createdByのバリデーション
-    if (!createdBy) {
-      console.error('createdBy is missing or empty');
+    const { eventName, description, candidateDates, defaultStartTime, defaultEndTime } = body;
+
+    // NextAuth.jsセッションからユーザー情報を取得
+    const session = await getServerSession();
+    
+    if (!session?.user?.lineUserId) {
       return NextResponse.json(
-        { success: false, message: '作成者情報が必要です' },
-        { status: 400 }
+        { success: false, message: 'ログインが必要です' },
+        { status: 401 }
       );
     }
 
     // まずeventsテーブルにイベント情報を挿入
     const eventResult = await sql`
       INSERT INTO events (title, description, created_by)
-      VALUES (${eventName}, ${description}, ${createdBy})
+      VALUES (${eventName}, ${description}, ${session.user.lineUserId})
       RETURNING id
     `;
 

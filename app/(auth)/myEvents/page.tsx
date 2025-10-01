@@ -1,6 +1,6 @@
-import EventCard from "@/app/components/EventCard";
+import Header from "@/components/features/auth/Header";
+import EventCard from "@/components/features/event/EventCard";
 import { getMyEvent } from "../../actions/event/getMyEvent";
-import Header from "../../components/Header";
 
 export default async function MyEventsPage() {
   const events = await getMyEvent();

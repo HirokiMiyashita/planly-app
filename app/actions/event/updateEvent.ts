@@ -1,19 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-
-interface SlotData {
-  id?: number;
-  day: string;
-  start_at: string;
-  end_at: string;
-}
-
-interface UpdateEventData {
-  title: string;
-  description: string | null;
-  slots: SlotData[];
-}
+import type { UpdateEventData } from "@/types/event";
 
 export const updateEvent = async (
   eventId: string,

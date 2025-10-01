@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import OnboardingModal from "@/app/components/OnboardingModal";
+import OnboardingModal from "@/components/features/auth/OnboardingModal";
 import { Button } from "@/components/ui/button";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useRandomColors } from "@/hooks/useRandomColors";

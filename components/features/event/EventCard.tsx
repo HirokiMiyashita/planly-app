@@ -3,9 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Event } from "../actions/event/getMyEvent";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import type { Event } from "@/types/event";
 import EventDetails from "./EventDetails";
 import EventEditForm from "./EventEditForm";
 
@@ -48,7 +49,12 @@ export default function EventCard({ event, isCreator }: EventCardProps) {
     <Card className="shadow-sm">
       <CardHeader>
         <div className="flex justify-between items-start">
-          <CardTitle>イベント名：{event.title}</CardTitle>
+          <div>
+            <Badge className="text-xs px-2 py-1 inline-block mb-0.5 bg-gray-500 font-bold">
+              イベント名
+            </Badge>
+            <p className="text-gray-600 text-xs">{event.title}</p>
+          </div>
           {event.isConfirmed && (
             <span className="text-sm font-medium text-green-600 bg-green-100 px-3 py-1 rounded-full">
               ✓ 確定済み
@@ -57,9 +63,14 @@ export default function EventCard({ event, isCreator }: EventCardProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-gray-600 text-xs">
-          イベント詳細：{event.description || "説明なし"}
-        </p>
+        <div>
+          <Badge className="text-xs px-2 py-1 inline-block mb-0.5 bg-gray-500 font-bold">
+            イベント詳細
+          </Badge>
+          <p className="text-gray-600 text-xs">
+            {event.description || "説明なし"}
+          </p>
+        </div>
         <div className="flex justify-end gap-2 mt-4">
           <Button
             size="sm"

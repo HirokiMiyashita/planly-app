@@ -1,7 +1,7 @@
 "use client";
 
-import BottomBar from "@/app/components/BottomBar";
-import Header from "@/app/components/Header";
+import Header from "@/components/features/auth/Header";
+import BottomBar from "@/components/features/BottomBar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 

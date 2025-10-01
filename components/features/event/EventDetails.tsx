@@ -4,16 +4,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { confirmed } from "@/app/actions/event/confirmed";
 import { Button } from "@/components/ui/button";
-import type { Event } from "../actions/event/getMyEvent";
-
-interface Participation {
-  id: number;
-  userId: string;
-  userName: string | null;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { Event, Participation } from "@/types/event";
 
 interface EventDetailsProps {
   event: Event;

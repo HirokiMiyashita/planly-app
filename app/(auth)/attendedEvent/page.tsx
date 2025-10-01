@@ -1,6 +1,6 @@
 import { getAttendEvent } from "@/app/actions/event/getAttendEvent";
-import EventCard from "@/app/components/EventCard";
-import Header from "@/app/components/Header";
+import Header from "@/components/features/auth/Header";
+import EventCard from "@/components/features/event/EventCard";
 
 export default async function AttendedEventPage() {
   const events = await getAttendEvent(true);

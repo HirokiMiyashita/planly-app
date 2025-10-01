@@ -1,7 +1,7 @@
 import { use } from "react";
 import { getEventById } from "@/app/actions/event/getEventById";
-import Header from "@/app/components/Header";
-import ParticipationForm from "@/app/components/ParticipationForm";
+import Header from "@/components/features/auth/Header";
+import ParticipationForm from "@/components/features/participation/ParticipationForm";
 
 interface ParticipationPageProps {
   params: Promise<{

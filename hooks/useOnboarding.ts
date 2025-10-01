@@ -6,7 +6,7 @@ import {
   getOnboardingConfigByPath,
   type OnboardingConfig,
   type OnboardingStep,
-} from "@/lib/onboarding-constants";
+} from "@/constants/onboarding";
 
 interface UseOnboardingReturn {
   isOpen: boolean;

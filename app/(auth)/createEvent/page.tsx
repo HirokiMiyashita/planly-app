@@ -1,5 +1,5 @@
-import EventForm from "../../components/EventForm";
-import Header from "../../components/Header";
+import Header from "@/components/features/auth/Header";
+import EventForm from "@/components/features/event/EventForm";
 
 export default function CreateEvent() {
   return (

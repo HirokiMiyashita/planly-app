@@ -1,40 +1,17 @@
 "use client";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { useEffect } from "react";
-import { useAuthStore } from "@/stores/authStore";
+import { useEffect, useState } from "react";
 
 export const useAuth = () => {
   const { data: session, status } = useSession();
-  const {
-    isLineBrowser,
-    user,
-    isAuthenticated,
-    setLineBrowser,
-    setUser,
-    logout,
-  } = useAuthStore();
+  const [isLineBrowser, setIsLineBrowser] = useState(false);
 
   // LINE内ブラウザかどうかを判定
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
     const isLine = userAgent.includes("line");
-    setLineBrowser(isLine);
-  }, [setLineBrowser]);
-
-  // NextAuth.jsのセッション状態をZustandストアに同期
-  useEffect(() => {
-    if (status === "loading") return;
-
-    if (session?.user?.lineUserId && session?.user?.lineUserName) {
-      setUser({
-        lineUserId: session.user.lineUserId,
-        lineUserName: session.user.lineUserName,
-        image: session.user.image || "",
-      });
-    } else {
-      setUser(null);
-    }
-  }, [session, status, setUser]);
+    setIsLineBrowser(isLine);
+  }, []);
 
   // 自動ログイン（LINE内ブラウザのみ）
   useEffect(() => {
@@ -45,16 +22,13 @@ export const useAuth = () => {
   }, [isLineBrowser, status]);
 
   const handleSignIn = () => signIn("line");
-  const handleSignOut = () => {
-    signOut();
-    logout();
-  };
+  const handleSignOut = () => signOut();
 
   return {
     // 状態
     isLineBrowser,
-    user,
-    isAuthenticated,
+    user: session?.user || null,
+    isAuthenticated: !!session,
     isLoading: status === "loading",
     signIn: handleSignIn,
     signOut: handleSignOut,

@@ -7,7 +7,8 @@ import {
   participationEvent,
 } from "@/app/actions/event/participationEvent";
 import { Button } from "@/components/ui/button";
-import { useValidationStore } from "@/stores/validationStore";
+
+// import { useValidationStore } from "@/stores/validationStore"; // 削除されたためコメントアウト
 
 type LocalParticipationStatus = "○" | "△" | "×" | null;
 
@@ -32,9 +33,26 @@ export default function ParticipationForm({
     Record<number, LocalParticipationStatus>
   >({});
 
-  // バリデーションストア
-  const { setError, clearError, clearAllErrors, getError } =
-    useValidationStore();
+  // バリデーション状態（useValidationStoreの代替）
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const setError = (key: string, message: string) => {
+    setErrors((prev) => ({ ...prev, [key]: message }));
+  };
+
+  const clearError = (key: string) => {
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[key];
+      return newErrors;
+    });
+  };
+
+  const clearAllErrors = () => {
+    setErrors({});
+  };
+
+  const getError = (key: string) => errors[key];
 
   // 参加状況を更新する関数
   const updateParticipation = (

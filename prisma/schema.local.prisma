@@ -33,6 +33,7 @@ model Event {
   slots       EventSlot[]
   participations EventParticipation[]
   confirmedSlot EventSlot? @relation("ConfirmedSlot", fields: [confirmedSlotId], references: [id])
+  @@index([createdBy, createdAt])
 
   @@map("events")
 }

@@ -41,21 +41,40 @@ export async function getMyEvent(): Promise<Event[]> {
     return [];
   }
 
-  // Prismaを使用してイベントとスロット、参加状況を取得
+  // Prismaを使用してイベントとスロット、参加状況を取得（最適化）
   const events = await prisma.event.findMany({
     where: {
       createdBy: lineUserId,
     },
-    include: {
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      createdAt: true,
+      isConfirmed: true,
+      confirmedSlotId: true,
       slots: {
-        orderBy: [{ day: "asc" }, { startAt: "asc" }],
-        include: {
+        select: {
+          id: true,
+          day: true,
+          startAt: true,
+          endAt: true,
           participations: {
-            include: {
-              user: true,
+            select: {
+              id: true,
+              userId: true,
+              status: true,
+              createdAt: true,
+              updatedAt: true,
+              user: {
+                select: {
+                  name: true,
+                },
+              },
             },
           },
         },
+        orderBy: [{ day: "asc" }, { startAt: "asc" }],
       },
     },
     orderBy: {

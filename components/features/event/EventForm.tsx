@@ -10,6 +10,7 @@ import { useRandomColors } from "@/hooks/useRandomColors";
 import type { CandidateDate } from "@/types/event";
 import CandidateDateList from "./CandidateDateList";
 import CandidateDateSelector from "./CandidateDateSelector";
+import { useRouter } from "next/navigation";
 
 export default function EventForm() {
   const formRef = useRef<HTMLFormElement>(null);
@@ -23,6 +24,7 @@ export default function EventForm() {
   const [candidateDates, setCandidateDates] = useState<CandidateDate[]>([]);
   const [eventName, setEventName] = useState("");
   const [description, setDescription] = useState("");
+  const router = useRouter();
 
   const addCandidateDate = (date: string) => {
     if (date && !candidateDates.some((candidate) => candidate.date === date)) {
@@ -72,6 +74,7 @@ export default function EventForm() {
         setDescription("");
         setCandidateDates([]);
         formRef.current?.reset();
+        router.push("/myEvents");
       } else {
         setMessage({ type: "error", text: result.message });
       }

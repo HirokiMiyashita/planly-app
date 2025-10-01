@@ -1,9 +1,9 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import Header from "@/app/components/Header";
 import BottomBar from "@/app/components/BottomBar";
+import Header from "@/app/components/Header";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AuthLayoutProps {
   children: React.ReactNode;

@@ -1,14 +1,14 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/useAuth";
 
 interface HeaderProps {
   title: string;
 }
 
 export default function Header({ title }: HeaderProps) {
-  const { user, isLoading,signOut } = useAuth();
+  const { user, isLoading } = useAuth();
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -25,14 +25,15 @@ export default function Header({ title }: HeaderProps) {
         <p className="text-lg font-bold">{title}</p>
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user?.image} alt={user?.lineUserName || "ユーザー"} />
+            <AvatarImage
+              src={user?.image}
+              alt={user?.lineUserName || "ユーザー"}
+            />
             <AvatarFallback className="text-xs">
               {user?.lineUserName?.charAt(0) || "U"}
             </AvatarFallback>
           </Avatar>
-          <span className="text-sm text-gray-600">
-            {user?.lineUserName}
-          </span>
+          <span className="text-sm text-gray-600">{user?.lineUserName}</span>
         </div>
       </div>
     </header>

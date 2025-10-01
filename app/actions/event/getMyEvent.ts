@@ -1,14 +1,42 @@
 "use server";
 
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
 
-export async function getMyEvent() {
+// 型定義
+export interface Participation {
+  id: number;
+  userId: string;
+  userName: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Slot {
+  id: number;
+  day: string;
+  start_at: string;
+  end_at: string;
+  participations: Participation[];
+}
+
+export interface Event {
+  id: number;
+  title: string;
+  description: string | null;
+  created_at: string;
+  isConfirmed: boolean;
+  confirmedSlotId: number | null;
+  slots: Slot[];
+}
+
+export async function getMyEvent(): Promise<Event[]> {
   const session = await getServerSession(authOptions);
 
   // セッションからlineUserIdを取得
-  let lineUserId = session?.user?.lineUserId;
+  const lineUserId = session?.user?.lineUserId;
   if (!lineUserId) {
     return [];
   }
@@ -20,49 +48,46 @@ export async function getMyEvent() {
     },
     include: {
       slots: {
-        orderBy: [
-          { day: 'asc' },
-          { startAt: 'asc' }
-        ],
+        orderBy: [{ day: "asc" }, { startAt: "asc" }],
         include: {
           participations: {
             where: {
               status: "○",
-              userId: lineUserId
+              userId: lineUserId,
             },
             include: {
-              user: true
-            }
-          }
-        }
-      }
+              user: true,
+            },
+          },
+        },
+      },
     },
     orderBy: {
-      createdAt: 'desc'
-    }
+      createdAt: "desc",
+    },
   });
 
   // データを整形
-  return events.map(event => ({
+  return events.map((event) => ({
     id: event.id,
     title: event.title,
     description: event.description,
     created_at: event.createdAt.toISOString(),
     isConfirmed: event.isConfirmed,
     confirmedSlotId: event.confirmedSlotId,
-    slots: event.slots.map(slot => ({
+    slots: event.slots.map((slot) => ({
       id: slot.id,
-      day: slot.day.toISOString().split('T')[0],
+      day: slot.day.toISOString().split("T")[0],
       start_at: slot.startAt,
       end_at: slot.endAt,
-      participations: slot.participations.map(participation => ({
+      participations: slot.participations.map((participation) => ({
         id: participation.id,
         userId: participation.userId,
         userName: participation.user.name,
         status: participation.status,
         createdAt: participation.createdAt.toISOString(),
-        updatedAt: participation.updatedAt.toISOString()
-      }))
-    }))
+        updatedAt: participation.updatedAt.toISOString(),
+      })),
+    })),
   }));
 }

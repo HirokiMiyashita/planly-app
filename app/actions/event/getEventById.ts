@@ -7,16 +7,13 @@ export async function getEventById(id: string) {
     // Prismaを使用してイベントとスロットを取得
     const event = await prisma.event.findUnique({
       where: {
-        id: parseInt(id),
+        id: parseInt(id, 10),
       },
       include: {
         slots: {
-          orderBy: [
-            { day: 'asc' },
-            { startAt: 'asc' }
-          ]
-        }
-      }
+          orderBy: [{ day: "asc" }, { startAt: "asc" }],
+        },
+      },
     });
 
     if (!event) {
@@ -29,12 +26,12 @@ export async function getEventById(id: string) {
       title: event.title,
       description: event.description,
       created_at: event.createdAt.toISOString(),
-      slots: event.slots.map(slot => ({
+      slots: event.slots.map((slot) => ({
         id: slot.id,
-        day: slot.day.toISOString().split('T')[0],
+        day: slot.day.toISOString().split("T")[0],
         start_at: slot.startAt,
         end_at: slot.endAt,
-      }))
+      })),
     };
   } catch (error) {
     console.error("Error fetching event:", error);

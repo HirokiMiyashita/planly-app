@@ -1,8 +1,8 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { prisma } from "@/lib/prisma";
 
 export enum ParticipationStatus {
   YES = "○",
@@ -15,20 +15,23 @@ export interface ParticipationData {
   status: ParticipationStatus;
 }
 
-export async function participationEvent(eventId: string, participations: ParticipationData[]) {
+export async function participationEvent(
+  eventId: string,
+  participations: ParticipationData[],
+) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     // セッションからlineUserIdを取得
-    let lineUserId = session?.user?.lineUserId;
+    const lineUserId = session?.user?.lineUserId;
     if (!lineUserId) {
       return { success: false, message: "ログインが必要です" };
     }
 
     // イベントが存在するか確認
     const event = await prisma.event.findUnique({
-      where: { id: parseInt(eventId) },
-      include: { slots: true }
+      where: { id: parseInt(eventId, 10) },
+      include: { slots: true },
     });
 
     if (!event) {
@@ -38,7 +41,7 @@ export async function participationEvent(eventId: string, participations: Partic
     // 各スロットの参加状況を保存
     for (const participation of participations) {
       // スロットがこのイベントに属しているか確認
-      const slot = event.slots.find(s => s.id === participation.slotId);
+      const slot = event.slots.find((s) => s.id === participation.slotId);
       if (!slot) {
         continue; // 無効なスロットIDはスキップ
       }
@@ -47,21 +50,21 @@ export async function participationEvent(eventId: string, participations: Partic
       await prisma.eventParticipation.upsert({
         where: {
           eventId_slotId_userId: {
-            eventId: parseInt(eventId),
+            eventId: parseInt(eventId, 10),
             slotId: participation.slotId,
-            userId: lineUserId
-          }
+            userId: lineUserId,
+          },
         },
         update: {
           status: participation.status,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         create: {
-          eventId: parseInt(eventId),
+          eventId: parseInt(eventId, 10),
           userId: lineUserId,
           slotId: participation.slotId,
-          status: participation.status
-        }
+          status: participation.status,
+        },
       });
     }
 

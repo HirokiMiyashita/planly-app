@@ -1,9 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { neon } from "@neondatabase/serverless";
-import { getServerSession } from "next-auth";
-
-// Neon Database接続
-const sql = neon(process.env.DATABASE_URL!);
+import { type NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,7 +15,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // NextAuth.jsセッションからユーザー情報を取得
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.lineUserId) {
       return NextResponse.json(
@@ -26,41 +24,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // まずeventsテーブルにイベント情報を挿入
-    const eventResult = await sql`
-      INSERT INTO events (title, description, created_by)
-      VALUES (${eventName}, ${description}, ${session.user.lineUserId})
-      RETURNING id
-    `;
+    // Prismaを使用してイベントとスロットを作成
+    const event = await prisma.event.create({
+      data: {
+        title: eventName,
+        description: description,
+        createdBy: session.user.lineUserId,
+        slots: {
+          create:
+            candidateDates && candidateDates.length > 0
+              ? candidateDates.map(
+                  (candidate: {
+                    date: string;
+                    startTime: string;
+                    endTime: string;
+                  }) => ({
+                    day: new Date(candidate.date),
+                    startAt: candidate.startTime,
+                    endAt: candidate.endTime,
+                  }),
+                )
+              : [
+                  {
+                    day: new Date(),
+                    startAt: defaultStartTime || "09:00",
+                    endAt: defaultEndTime || "10:00",
+                  },
+                ],
+        },
+      },
+      include: {
+        slots: true,
+      },
+    });
 
-    const eventId = eventResult[0].id;
-    const savedSlots = [];
-
-    // 候補日がある場合はevent_slotsテーブルに挿入
-    if (candidateDates && candidateDates.length > 0) {
-      for (const candidate of candidateDates) {
-        const result = await sql`
-          INSERT INTO event_slots (day, start_at, end_at, event_id)
-          VALUES (${candidate.date}, ${candidate.startTime}, ${candidate.endTime}, ${eventId})
-          RETURNING id
-        `;
-
-        savedSlots.push(result[0].id);
-      }
-    } else {
-      // 候補日がない場合は、デフォルト時間で今日の日付を使用
-      const today = new Date().toISOString().split("T")[0];
-      const startTime = defaultStartTime || "09:00";
-      const endTime = defaultEndTime || "10:00";
-
-      const result = await sql`
-        INSERT INTO event_slots (day, start_at, end_at, event_id)
-        VALUES (${today}, ${startTime}, ${endTime}, ${eventId})
-        RETURNING id
-      `;
-
-      savedSlots.push(result[0].id);
-    }
+    const eventId = event.id;
+    const savedSlots = event.slots.map((slot) => slot.id);
 
     return NextResponse.json({
       success: true,
@@ -79,28 +78,33 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    // イベント一覧を取得（event_slotsと結合）
-    const events = await sql`
-      SELECT 
-        e.id,
-        e.title,
-        e.description,
-        e.created_at,
-        json_agg(
-          json_build_object(
-            'id', es.id,
-            'day', es.day,
-            'start_at', es.start_at,
-            'end_at', es.end_at
-          )
-        ) as slots
-      FROM events e
-      LEFT JOIN event_slots es ON e.id = es.event_id
-      GROUP BY e.id, e.title, e.description, e.created_at
-      ORDER BY e.created_at DESC
-    `;
+    // Prismaを使用してイベント一覧を取得
+    const events = await prisma.event.findMany({
+      include: {
+        slots: {
+          orderBy: [{ day: "asc" }, { startAt: "asc" }],
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
-    return NextResponse.json({ success: true, events });
+    // データを整形
+    const formattedEvents = events.map((event) => ({
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      created_at: event.createdAt.toISOString(),
+      slots: event.slots.map((slot) => ({
+        id: slot.id,
+        day: slot.day.toISOString().split("T")[0],
+        start_at: slot.startAt,
+        end_at: slot.endAt,
+      })),
+    }));
+
+    return NextResponse.json({ success: true, events: formattedEvents });
   } catch (error) {
     console.error("Database error:", error);
     return NextResponse.json(

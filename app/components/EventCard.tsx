@@ -1,53 +1,39 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { confirmed } from "@/app/actions/event/confirmed";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Event } from "../actions/event/getMyEvent";
 
 interface Participation {
   id: number;
   userId: string;
-  userName: string;
+  userName: string | null;
   status: string;
   createdAt: string;
   updatedAt: string;
 }
 
-interface Slot {
-  id: number;
-  day: string;
-  start_at: string;
-  end_at: string;
-  participations: Participation[];
-}
-
-interface Event {
-  id: number;
-  title: string;
-  description: string | null;
-  created_at: string;
-  isConfirmed: boolean;
-  confirmedAt: string | null;
-  confirmedSlotId: number | null;
-  slots: Slot[];
-}
-
-interface EventCardProps {
-  event: Event;
-}
-
-export default function EventCard({ event }: EventCardProps) {
+export default function EventCard(event: Event) {
   const [showDetails, setShowDetails] = useState(false);
 
   // 参加状況の集計関数
-  const getParticipationSummary = (participations: Participation[]) => {
+  const getParticipationSummary = (participations: Participation[] | null) => {
+    if (!participations) {
+      return {
+        yes: 0,
+        maybe: 0,
+        no: 0,
+        total: 0,
+      };
+    }
     const summary = {
-      yes: participations.filter(p => p.status === "○").length,
-      maybe: participations.filter(p => p.status === "△").length,
-      no: participations.filter(p => p.status === "×").length,
-      total: participations.length
+      yes: participations.filter((p) => p.status === "○").length,
+      maybe: participations.filter((p) => p.status === "△").length,
+      no: participations.filter((p) => p.status === "×").length,
+      total: participations.length,
     };
     return summary;
   };
@@ -56,11 +42,12 @@ export default function EventCard({ event }: EventCardProps) {
     try {
       const inviteUrl = `${window.location.origin}/participation/${event.id}`;
       await navigator.clipboard.writeText(inviteUrl);
-      toast.success(`招待URLをコピーしました`,{
+      toast.success(`招待URLをコピーしました`, {
         className: "bg-green-500 text-white",
       });
     } catch (error) {
-      toast.error('コピーに失敗しました',{
+      console.error(error);
+      toast.error("コピーに失敗しました", {
         className: "bg-red-500 text-white",
       });
     }
@@ -86,7 +73,7 @@ export default function EventCard({ event }: EventCardProps) {
       }
     } catch (error) {
       console.error(error);
-      toast.error('確定に失敗しました', {
+      toast.error("確定に失敗しました", {
         className: "bg-red-500 text-white",
       });
     }
@@ -152,10 +139,12 @@ export default function EventCard({ event }: EventCardProps) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-gray-500">回答数: {summary.total}人</p>
+                      <p className="text-xs text-gray-500">
+                        回答数: {summary.total}人
+                      </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-between items-center">
                     <div className="flex gap-4 text-sm">
                       <div className="flex items-center gap-1">
@@ -171,10 +160,11 @@ export default function EventCard({ event }: EventCardProps) {
                         <span>× {summary.no}人</span>
                       </div>
                     </div>
-                    
+
                     {/* 確定ボタン */}
                     <div className="flex items-center gap-2">
-                      {event.isConfirmed && event.confirmedSlotId === slot.id ? (
+                      {event.isConfirmed &&
+                      event.confirmedSlotId === slot.id ? (
                         <span className="text-sm font-medium text-green-600 bg-green-100 px-2 py-1 rounded">
                           ✓ 確定済み
                         </span>
@@ -203,11 +193,12 @@ export default function EventCard({ event }: EventCardProps) {
                               participation.status === "○"
                                 ? "bg-green-100 text-green-800"
                                 : participation.status === "△"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
                             }`}
                           >
-                            {participation.userName} {participation.status}
+                            {participation.userName || "不明"}{" "}
+                            {participation.status}
                           </span>
                         ))}
                       </div>

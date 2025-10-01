@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { createEvent } from "@/app/actions/event/createEvent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,11 +28,14 @@ export default function EventForm() {
 
   const addCandidateDate = (date: string) => {
     if (date && !candidateDates.some((candidate) => candidate.date === date)) {
-      setCandidateDates([...candidateDates, {
-        date: date,
-        startTime: "09:00",
-        endTime: "10:00"
-      }]);
+      setCandidateDates([
+        ...candidateDates,
+        {
+          date: date,
+          startTime: "09:00",
+          endTime: "10:00",
+        },
+      ]);
     }
   };
 
@@ -108,6 +111,7 @@ export default function EventForm() {
         setMessage({ type: "error", text: result.message });
       }
     } catch (error) {
+      console.error(error);
       setMessage({ type: "error", text: "予期しないエラーが発生しました" });
     } finally {
       setIsSubmitting(false);

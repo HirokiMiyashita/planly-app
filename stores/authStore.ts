@@ -10,7 +10,9 @@ interface AuthState {
     image?: string;
   } | null;
   setLineBrowser: (isLine: boolean) => void;
-  setUser: (user: { lineUserId: string; lineUserName: string; image: string } | null) => void;
+  setUser: (
+    user: { lineUserId: string; lineUserName: string; image: string } | null,
+  ) => void;
   setAuthenticated: (authenticated: boolean) => void;
   logout: () => void;
 }

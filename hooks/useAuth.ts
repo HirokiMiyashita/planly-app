@@ -1,6 +1,6 @@
 "use client";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { useEffect } from "react";
-import { useSession, signIn, signOut } from "next-auth/react";
 import { useAuthStore } from "@/stores/authStore";
 
 export const useAuth = () => {
@@ -11,7 +11,6 @@ export const useAuth = () => {
     isAuthenticated,
     setLineBrowser,
     setUser,
-    setAuthenticated,
     logout,
   } = useAuthStore();
 

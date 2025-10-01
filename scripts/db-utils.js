@@ -35,7 +35,7 @@ async function main() {
         await checkTable(tableName);
         break;
 
-      case "add":
+      case "add": {
         if (!tableName || !columnName) {
           console.error("テーブル名とカラム名を指定してください");
           return;
@@ -43,6 +43,7 @@ async function main() {
         const dataType = process.argv[5] || "TEXT";
         await addColumn(tableName, columnName, dataType);
         break;
+      }
 
       case "drop":
         if (!tableName || !columnName) {

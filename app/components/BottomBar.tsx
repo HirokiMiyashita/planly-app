@@ -1,8 +1,8 @@
 "use client";
 
+import { Eye, Home, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Plus, Eye } from "lucide-react";
 
 export default function BottomBar() {
   const pathname = usePathname();

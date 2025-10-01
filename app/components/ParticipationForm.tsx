@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { participationEvent, ParticipationStatus } from "@/app/actions/event/participationEvent";
 import { toast } from "sonner";
+import {
+  type ParticipationStatus,
+  participationEvent,
+} from "@/app/actions/event/participationEvent";
+import { Button } from "@/components/ui/button";
 import { useValidationStore } from "@/stores/validationStore";
 
 type LocalParticipationStatus = "○" | "△" | "×" | null;
@@ -20,20 +23,29 @@ interface ParticipationFormProps {
   eventId: string;
 }
 
-export default function ParticipationForm({ slots, eventId }: ParticipationFormProps) {
+export default function ParticipationForm({
+  slots,
+  eventId,
+}: ParticipationFormProps) {
   // 各スロットの参加状況を管理
-  const [participations, setParticipations] = useState<Record<number, LocalParticipationStatus>>({});
-  
+  const [participations, setParticipations] = useState<
+    Record<number, LocalParticipationStatus>
+  >({});
+
   // バリデーションストア
-  const { setError, clearError, clearAllErrors, getError } = useValidationStore();
+  const { setError, clearError, clearAllErrors, getError } =
+    useValidationStore();
 
   // 参加状況を更新する関数
-  const updateParticipation = (slotId: number, status: LocalParticipationStatus) => {
-    setParticipations(prev => ({
+  const updateParticipation = (
+    slotId: number,
+    status: LocalParticipationStatus,
+  ) => {
+    setParticipations((prev) => ({
       ...prev,
-      [slotId]: status
+      [slotId]: status,
     }));
-    
+
     // ステータスが選択されたらエラーをクリア
     if (status !== null) {
       clearError(`slot_${slotId}`);
@@ -44,14 +56,17 @@ export default function ParticipationForm({ slots, eventId }: ParticipationFormP
   const validateParticipations = () => {
     clearAllErrors();
     let hasErrors = false;
-    
-    slots.forEach(slot => {
-      if (participations[slot.id] === null || participations[slot.id] === undefined) {
+
+    slots.forEach((slot) => {
+      if (
+        participations[slot.id] === null ||
+        participations[slot.id] === undefined
+      ) {
         setError(`slot_${slot.id}`, "参加状況を選択してください");
         hasErrors = true;
       }
     });
-    
+
     return !hasErrors;
   };
 
@@ -61,23 +76,24 @@ export default function ParticipationForm({ slots, eventId }: ParticipationFormP
       toast.error("全ての候補日程で参加状況を選択してください");
       return;
     }
-    
+
     try {
       const participationData = Object.entries(participations)
         .filter(([_, status]) => status !== null)
         .map(([slotId, status]) => ({
-          slotId: parseInt(slotId),
-          status: status as ParticipationStatus
+          slotId: parseInt(slotId, 10),
+          status: status as ParticipationStatus,
         }));
-      
+
       const result = await participationEvent(eventId, participationData);
-      
+
       if (result.success) {
         toast.success("参加状況を保存しました");
       } else {
         toast.error(result.message);
       }
     } catch (error) {
+      console.error(error);
       toast.error("エラーが発生しました");
     }
   };
@@ -122,9 +138,11 @@ export default function ParticipationForm({ slots, eventId }: ParticipationFormP
                 <Button
                   key={status}
                   size="sm"
-                  variant={participations[slot.id] === status ? "default" : "outline"}
+                  variant={
+                    participations[slot.id] === status ? "default" : "outline"
+                  }
                   className={`w-10 h-10 p-0 text-lg font-bold ${
-                    participations[slot.id] === status 
+                    participations[slot.id] === status
                       ? getStatusStyle(status)
                       : "border-gray-300 hover:bg-gray-50"
                   }`}
@@ -135,7 +153,9 @@ export default function ParticipationForm({ slots, eventId }: ParticipationFormP
               ))}
             </div>
             {getError(`slot_${slot.id}`) && (
-              <p className="text-xs text-red-500">{getError(`slot_${slot.id}`)}</p>
+              <p className="text-xs text-red-500">
+                {getError(`slot_${slot.id}`)}
+              </p>
             )}
           </div>
         </div>

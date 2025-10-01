@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface ValidationState {
   errors: Record<string, string>;
@@ -11,22 +11,22 @@ interface ValidationState {
 
 export const useValidationStore = create<ValidationState>((set, get) => ({
   errors: {},
-  
+
   setError: (field: string, message: string) =>
     set((state) => ({
-      errors: { ...state.errors, [field]: message }
+      errors: { ...state.errors, [field]: message },
     })),
-  
+
   clearError: (field: string) =>
     set((state) => {
       const newErrors = { ...state.errors };
       delete newErrors[field];
       return { errors: newErrors };
     }),
-  
+
   clearAllErrors: () => set({ errors: {} }),
-  
+
   hasErrors: () => Object.keys(get().errors).length > 0,
-  
+
   getError: (field: string) => get().errors[field],
 }));

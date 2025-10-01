@@ -1,10 +1,9 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth, { type NextAuthOptions } from "next-auth";
 import LineProvider from "next-auth/providers/line";
 import { prisma } from "@/lib/prisma";
 
-
 export const authOptions: NextAuthOptions = {
-  debug: process.env.NODE_ENV === 'development', // 開発時のみデバッグログを有効化
+  debug: process.env.NODE_ENV === "development", // 開発時のみデバッグログを有効化
   providers: [
     LineProvider({
       clientId: "2007979395",
@@ -18,7 +17,7 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ account, profile }) {
       // 初回サインイン時にデータベースにユーザー情報を保存
       if (account?.provider === "line" && profile) {
         try {

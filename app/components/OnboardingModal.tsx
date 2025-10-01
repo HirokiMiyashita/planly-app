@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -92,7 +92,7 @@ export default function OnboardingModal({
           <div className="flex justify-center space-x-2">
             {onboardingSteps.map((_, index) => (
               <div
-                key={index}
+                key={currentStep}
                 className={`w-2 h-2 rounded-full ${
                   index === currentStep ? "bg-blue-500" : "bg-gray-300"
                 }`}

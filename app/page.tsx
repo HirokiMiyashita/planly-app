@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 import OnboardingModal from "@/app/components/OnboardingModal";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const router = useRouter();

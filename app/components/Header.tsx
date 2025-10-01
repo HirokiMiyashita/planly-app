@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import OnboardingModal from "@/app/components/OnboardingModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import OnboardingModal from "@/app/components/OnboardingModal";
 
 interface HeaderProps {
   title: string;

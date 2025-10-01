@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { createEvent } from "@/app/actions/event/createEvent";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,6 @@ import { useRandomColors } from "@/hooks/useRandomColors";
 import type { CandidateDate } from "@/types/event";
 import CandidateDateList from "./CandidateDateList";
 import CandidateDateSelector from "./CandidateDateSelector";
-import { useRouter } from "next/navigation";
 
 export default function EventForm() {
   const formRef = useRef<HTMLFormElement>(null);

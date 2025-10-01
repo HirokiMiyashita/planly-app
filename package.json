@@ -19,7 +19,8 @@
     "db:local:start": "docker-compose up -d postgres",
     "db:local:stop": "docker-compose down",
     "db:local:reset": "docker-compose down -v && docker-compose up -d postgres",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@auth/core": "^0.40.0",

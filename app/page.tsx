@@ -1,10 +1,21 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import OnboardingModal from "@/app/components/OnboardingModal";
 
 export default function Home() {
   const router = useRouter();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // 初回ユーザーかどうかをチェック
+  useEffect(() => {
+    const isOnboardingCompleted = localStorage.getItem("planly-onboarding-completed");
+    if (!isOnboardingCompleted) {
+      setShowOnboarding(true);
+    }
+  }, []);
 
   // ランダムな色を生成する関数
   const getRandomColor = () => {
@@ -42,7 +53,12 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center pb-20">
+    <>
+      <OnboardingModal 
+        isOpen={showOnboarding} 
+        onClose={() => setShowOnboarding(false)} 
+      />
+      <div className="min-h-screen flex items-center justify-center pb-20 bg-gray-100">
       <div className="text-center space-y-8 max-w-md w-full px-4">
         <div className="space-y-4">
           <h1 className="text-3xl font-bold text-gray-800">
@@ -111,6 +127,7 @@ export default function Home() {
           </Button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

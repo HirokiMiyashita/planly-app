@@ -16,7 +16,12 @@ interface Participation {
   updatedAt: string;
 }
 
-export default function EventCard(event: Event) {
+interface EventCardProps {
+  event: Event;
+  isCreator: boolean;
+}
+
+export default function EventCard({ event, isCreator }: EventCardProps) {
   const [showDetails, setShowDetails] = useState(false);
 
   // 参加状況の集計関数
@@ -101,6 +106,8 @@ export default function EventCard(event: Event) {
           >
             {showDetails ? "参加状況を閉じる" : "参加状況を見る"}
           </Button>
+          {isCreator && (
+            <>
           <Button
             size="sm"
             className="bg-blue-500 hover:bg-blue-600 text-white"
@@ -112,9 +119,11 @@ export default function EventCard(event: Event) {
             size="sm"
             className="bg-green-500 hover:bg-green-600 text-white"
             onClick={handleEdit}
-          >
-            編集
-          </Button>
+            >
+              編集
+            </Button>
+            </>
+          )}
         </div>
 
         {/* 詳細表示 */}
@@ -162,9 +171,9 @@ export default function EventCard(event: Event) {
                     </div>
 
                     {/* 確定ボタン */}
+                    {isCreator && (
                     <div className="flex items-center gap-2">
-                      {event.isConfirmed &&
-                      event.confirmedSlotId === slot.id ? (
+                      {event.confirmedSlotId === slot.id ? (
                         <span className="text-sm font-medium text-green-600 bg-green-100 px-2 py-1 rounded">
                           ✓ 確定済み
                         </span>
@@ -177,8 +186,9 @@ export default function EventCard(event: Event) {
                         >
                           この日時で確定
                         </Button>
-                      )}
-                    </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* 参加者リスト */}

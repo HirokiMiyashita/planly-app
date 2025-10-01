@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import OnboardingModal from "@/app/components/OnboardingModal";
 
 interface HeaderProps {
   title: string;
@@ -9,6 +12,7 @@ interface HeaderProps {
 
 export default function Header({ title }: HeaderProps) {
   const { user, isLoading } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -20,22 +24,36 @@ export default function Header({ title }: HeaderProps) {
     );
   }
   return (
-    <header className="bg-white p-4 border-b">
-      <div className="flex items-center justify-between">
-        <p className="text-lg font-bold">{title}</p>
-        <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
-            <AvatarImage
-              src={user?.image}
-              alt={user?.lineUserName || "ユーザー"}
-            />
-            <AvatarFallback className="text-xs">
-              {user?.lineUserName?.charAt(0) || "U"}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-sm text-gray-600">{user?.lineUserName}</span>
+    <>
+      <OnboardingModal 
+        isOpen={showOnboarding} 
+        onClose={() => setShowOnboarding(false)} 
+      />
+      <header className="bg-white p-4 border-b">
+        <div className="flex items-center justify-between">
+          <p className="text-lg font-bold">{title}</p>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowOnboarding(true)}
+              className="text-xs"
+            >
+              💡 使い方
+            </Button>
+            <Avatar className="h-8 w-8">
+              <AvatarImage
+                src={user?.image}
+                alt={user?.lineUserName || "ユーザー"}
+              />
+              <AvatarFallback className="text-xs">
+                {user?.lineUserName?.charAt(0) || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-sm text-gray-600">{user?.lineUserName}</span>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }

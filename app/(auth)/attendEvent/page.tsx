@@ -1,5 +1,5 @@
 import { getAttendEvent } from "@/app/actions/event/getAttendEvent";
-import AttendEventCard from "@/app/components/AttendEventCard";
+import EventCard from "@/app/components/EventCard";
 import Header from "@/app/components/Header";
 
 export default async function AttendEventPage() {
@@ -18,7 +18,7 @@ export default async function AttendEventPage() {
         ) : (
           <div className="space-y-4">
             {events.map((event) => (
-              <AttendEventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} isCreator={false} />
             ))}
           </div>
         )}

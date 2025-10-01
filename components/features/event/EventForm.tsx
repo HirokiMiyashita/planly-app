@@ -58,12 +58,16 @@ export default function EventForm() {
     );
   };
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsSubmitting(true);
     setMessage(null);
 
     try {
-      // 候補日データをJSON文字列として追加
+      // FormDataを作成
+      const formData = new FormData();
+      formData.append("eventName", eventName);
+      formData.append("description", description);
       formData.append("candidateDates", JSON.stringify(candidateDates));
 
       const result = await createEvent(formData);
@@ -103,7 +107,7 @@ export default function EventForm() {
           </div>
         )}
 
-        <form ref={formRef} action={handleSubmit} className="space-y-6">
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label
               htmlFor="eventName"

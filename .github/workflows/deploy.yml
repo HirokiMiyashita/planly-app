@@ -46,10 +46,9 @@ jobs:
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
 
-      # ローカルで本番DBを使用しているため、マイグレーションは不要
-      # - name: Run database migrations
-      #   if: github.ref == 'refs/heads/main'
-      #   run: pnpm run db:prisma-deploy
-      #   env:
-      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Run database migrations
+        if: github.ref == 'refs/heads/main'
+        run: pnpm run db:prisma-deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import OnboardingModal from "@/app/components/OnboardingModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 interface HeaderProps {
   title: string;
@@ -12,7 +12,12 @@ interface HeaderProps {
 
 export default function Header({ title }: HeaderProps) {
   const { user, isLoading } = useAuth();
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const { openUsageGuide, isOpen, closeOnboarding } = useOnboarding();
+
+  const handleUsageClick = () => {
+    openUsageGuide();
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -23,12 +28,10 @@ export default function Header({ title }: HeaderProps) {
       </div>
     );
   }
+
   return (
     <>
-      <OnboardingModal
-        isOpen={showOnboarding}
-        onClose={() => setShowOnboarding(false)}
-      />
+      <OnboardingModal isOpen={isOpen} onClose={closeOnboarding} />
       <header className="bg-white p-4 border-b">
         <div className="flex items-center justify-between">
           <p className="text-lg font-bold">{title}</p>
@@ -36,7 +39,7 @@ export default function Header({ title }: HeaderProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowOnboarding(true)}
+              onClick={handleUsageClick}
               className="text-xs"
             >
               💡 使い方

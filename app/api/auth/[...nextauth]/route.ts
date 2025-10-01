@@ -6,8 +6,8 @@ export const authOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === "development", // 開発時のみデバッグログを有効化
   providers: [
     LineProvider({
-      clientId: "2007979395",
-      clientSecret: "873845d7b4564e86374461b9220842b8",
+      clientId: process.env.LINE_CLIENT_ID as string,
+      clientSecret: process.env.LINE_CLIENT_SECRET_ID as string,
       authorization: {
         params: {
           scope: "profile openid",

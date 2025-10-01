@@ -302,8 +302,8 @@ export default function EventForm() {
         <div className="flex gap-3 pt-4">
           <Button
             type="submit"
-            variant="default"
-            className="flex-1"
+            size="lg"
+            className="w-[80%] mx-auto py-4 h-auto"
             disabled={isSubmitting}
             color="primary"
           >

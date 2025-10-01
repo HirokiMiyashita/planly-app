@@ -1,11 +1,10 @@
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import LineProvider from "next-auth/providers/line";
-import { neon } from '@neondatabase/serverless';
+import { prisma } from "@/lib/prisma";
 
-const sql = neon(process.env.DATABASE_URL!);
 
-const handler = NextAuth({
-  debug: true, // デバッグログを有効化
+export const authOptions: NextAuthOptions = {
+  debug: process.env.NODE_ENV === 'development', // 開発時のみデバッグログを有効化
   providers: [
     LineProvider({
       clientId: "2007979395",
@@ -21,16 +20,21 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ user, account, profile }) {
       // 初回サインイン時にデータベースにユーザー情報を保存
-      if (account?.provider === 'line' && profile) {
+      if (account?.provider === "line" && profile) {
         try {
-          await sql`
-            INSERT INTO users (id, name, created_at)
-            VALUES (${profile.sub}, ${profile.name}, NOW())
-            ON CONFLICT (id) DO NOTHING
-          `;
-          console.log('User saved to database:', profile.sub);
+          await prisma.user.upsert({
+            where: { id: profile.sub as string },
+            update: {
+              name: profile.name as string,
+            },
+            create: {
+              id: profile.sub as string,
+              name: profile.name as string,
+            },
+          });
+          // User saved to database
         } catch (error) {
-          console.error('Database error during sign in:', error);
+          console.error("Database error during sign in:", error);
           // データベースエラーでもサインインは続行
         }
       }
@@ -39,23 +43,28 @@ const handler = NextAuth({
     async jwt({ token, account, profile }) {
       // 初回サインイン時にユーザー情報を保存
       if (account && profile) {
-        token.lineUserId = profile.sub;
-        token.lineUserName = profile.name;
+        token.lineUserId = profile.sub as string;
+        token.lineUserName = profile.name as string;
       }
       return token;
     },
     async session({ session, token }) {
       // セッションにLINEユーザー情報を追加
-      if (token.lineUserId) {
-        session.user.lineUserId = token.lineUserId as string;
-        session.user.lineUserName = token.lineUserName as string;
-      }
-      return session;
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          lineUserId: token.lineUserId,
+          lineUserName: token.lineUserName,
+        },
+      };
     },
   },
   pages: {
-    signIn: '/auth/signin',
+    signIn: "/auth/signin",
   },
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

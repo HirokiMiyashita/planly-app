@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  events    Event[]
+  participations EventParticipation[]
+
+  @@map("users")
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  isConfirmed Boolean  @default(false) @map("is_confirmed")
+  confirmedAt DateTime? @map("confirmed_at")
+  confirmedSlotId Int? @map("confirmed_slot_id")
+
+  user        User     @relation(fields: [createdBy], references: [id])
+  slots       EventSlot[]
+  participations EventParticipation[]
+  confirmedSlot EventSlot? @relation("ConfirmedSlot", fields: [confirmedSlotId], references: [id])
+
+  @@map("events")
+}
+
+model EventSlot {
+  id      Int      @id @default(autoincrement())
+  day     DateTime @db.Date
+  startAt String   @map("start_at")
+  endAt   String   @map("end_at")
+  eventId Int      @map("event_id")
+
+  event         Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  participations EventParticipation[]
+  confirmedEvents Event[] @relation("ConfirmedSlot")
+
+  @@map("event_slots")
+}
+
+model Schedule {
+  id          Int      @id @default(autoincrement())
+  title       String
+  day         DateTime
+  startTime   DateTime @map("start_time")
+  endTime     DateTime @map("end_time")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("schedules")
+}
+
+model EventParticipation {
+  id      Int    @id @default(autoincrement())
+  eventId Int    @map("event_id")
+  slotId  Int    @map("slot_id")
+  userId  String @map("user_id")
+  status  String // '○', '△', '×'
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  event Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  slot  EventSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, slotId, userId])
+  @@map("event_participations")
+}

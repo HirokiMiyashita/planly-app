@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { neon } from '@neondatabase/serverless';
-import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from "next/server";
+import { neon } from "@neondatabase/serverless";
+import { getServerSession } from "next-auth";
 
 // Neon Database接続
 const sql = neon(process.env.DATABASE_URL!);
@@ -8,15 +8,21 @@ const sql = neon(process.env.DATABASE_URL!);
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventName, description, candidateDates, defaultStartTime, defaultEndTime } = body;
+    const {
+      eventName,
+      description,
+      candidateDates,
+      defaultStartTime,
+      defaultEndTime,
+    } = body;
 
     // NextAuth.jsセッションからユーザー情報を取得
     const session = await getServerSession();
-    
+
     if (!session?.user?.lineUserId) {
       return NextResponse.json(
-        { success: false, message: 'ログインが必要です' },
-        { status: 401 }
+        { success: false, message: "ログインが必要です" },
+        { status: 401 },
       );
     }
 
@@ -43,9 +49,9 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // 候補日がない場合は、デフォルト時間で今日の日付を使用
-      const today = new Date().toISOString().split('T')[0];
-      const startTime = defaultStartTime || '09:00';
-      const endTime = defaultEndTime || '10:00';
+      const today = new Date().toISOString().split("T")[0];
+      const startTime = defaultStartTime || "09:00";
+      const endTime = defaultEndTime || "10:00";
 
       const result = await sql`
         INSERT INTO event_slots (day, start_at, end_at, event_id)
@@ -56,18 +62,17 @@ export async function POST(request: NextRequest) {
       savedSlots.push(result[0].id);
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       eventId: eventId,
       slotIds: savedSlots,
-      message: 'イベントが正常に保存されました' 
+      message: "イベントが正常に保存されました",
     });
-
   } catch (error) {
-    console.error('Database error:', error);
+    console.error("Database error:", error);
     return NextResponse.json(
-      { success: false, message: 'データベースエラーが発生しました' },
-      { status: 500 }
+      { success: false, message: "データベースエラーが発生しました" },
+      { status: 500 },
     );
   }
 }
@@ -96,12 +101,11 @@ export async function GET() {
     `;
 
     return NextResponse.json({ success: true, events });
-
   } catch (error) {
-    console.error('Database error:', error);
+    console.error("Database error:", error);
     return NextResponse.json(
-      { success: false, message: 'データベースエラーが発生しました' },
-      { status: 500 }
+      { success: false, message: "データベースエラーが発生しました" },
+      { status: 500 },
     );
   }
 }

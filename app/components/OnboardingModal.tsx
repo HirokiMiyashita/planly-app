@@ -25,7 +25,6 @@ export default function OnboardingModal({
   } = useOnboarding();
 
   if (!isOpen) return null;
-
   return (
     <div className="fixed inset-0 bg-opacity-20 flex items-center justify-center z-50 p-4 bg-black/50">
       <Card className="w-full max-w-md">

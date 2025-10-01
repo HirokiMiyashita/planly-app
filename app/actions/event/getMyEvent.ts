@@ -51,10 +51,6 @@ export async function getMyEvent(): Promise<Event[]> {
         orderBy: [{ day: "asc" }, { startAt: "asc" }],
         include: {
           participations: {
-            where: {
-              status: "○",
-              userId: lineUserId,
-            },
             include: {
               user: true,
             },

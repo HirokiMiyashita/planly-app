@@ -108,20 +108,20 @@ export default function EventCard({ event, isCreator }: EventCardProps) {
           </Button>
           {isCreator && (
             <>
-          <Button
-            size="sm"
-            className="bg-blue-500 hover:bg-blue-600 text-white"
-            onClick={handleInvite}
-          >
-            招待
-          </Button>
-          <Button
-            size="sm"
-            className="bg-green-500 hover:bg-green-600 text-white"
-            onClick={handleEdit}
-            >
-              編集
-            </Button>
+              <Button
+                size="sm"
+                className="bg-blue-500 hover:bg-blue-600 text-white"
+                onClick={handleInvite}
+              >
+                招待
+              </Button>
+              <Button
+                size="sm"
+                className="bg-green-500 hover:bg-green-600 text-white"
+                onClick={handleEdit}
+              >
+                編集
+              </Button>
             </>
           )}
         </div>
@@ -172,20 +172,20 @@ export default function EventCard({ event, isCreator }: EventCardProps) {
 
                     {/* 確定ボタン */}
                     {isCreator && (
-                    <div className="flex items-center gap-2">
-                      {event.confirmedSlotId === slot.id ? (
-                        <span className="text-sm font-medium text-green-600 bg-green-100 px-2 py-1 rounded">
-                          ✓ 確定済み
-                        </span>
-                      ) : (
-                        <Button
-                          size="sm"
-                          className="bg-purple-500 hover:bg-purple-600 text-white text-xs"
-                          onClick={() => handleConfirmSlot(slot.id)}
-                          disabled={event.isConfirmed}
-                        >
-                          この日時で確定
-                        </Button>
+                      <div className="flex items-center gap-2">
+                        {event.confirmedSlotId === slot.id ? (
+                          <span className="text-sm font-medium text-green-600 bg-green-100 px-2 py-1 rounded">
+                            ✓ 確定済み
+                          </span>
+                        ) : (
+                          <Button
+                            size="sm"
+                            className="bg-purple-500 hover:bg-purple-600 text-white text-xs"
+                            onClick={() => handleConfirmSlot(slot.id)}
+                            disabled={event.isConfirmed}
+                          >
+                            この日時で確定
+                          </Button>
                         )}
                       </div>
                     )}

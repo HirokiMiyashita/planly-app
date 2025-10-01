@@ -25,9 +25,9 @@ export default function Header({ title }: HeaderProps) {
   }
   return (
     <>
-      <OnboardingModal 
-        isOpen={showOnboarding} 
-        onClose={() => setShowOnboarding(false)} 
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
       />
       <header className="bg-white p-4 border-b">
         <div className="flex items-center justify-between">

@@ -42,7 +42,7 @@ export async function getAttendEvent(before: boolean = false) {
       },
     },
   });
-  
+
   // データを整形
   return events.map((event) => ({
     id: event.id,

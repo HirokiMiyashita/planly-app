@@ -13,31 +13,37 @@ const onboardingSteps = [
   {
     title: "Planlyへようこそ！",
     content: "Planlyは、グループでイベントの日程を調整できるアプリです。",
-    image: "👋"
+    image: "👋",
   },
   {
     title: "イベントを作成",
     content: "「イベント作成」から、イベント名と候補日時を設定できます。",
-    image: "📅"
+    image: "📅",
   },
   {
     title: "参加者を招待",
-    content: "作成したイベントの「招待」ボタンから、参加者にURLを共有できます。",
-    image: "📤"
+    content:
+      "作成したイベントの「招待」ボタンから、参加者にURLを共有できます。",
+    image: "📤",
   },
   {
     title: "参加表明",
-    content: "招待されたURLから、○（参加）、△（未定）、×（不参加）で回答できます。",
-    image: "✅"
+    content:
+      "招待されたURLから、○（参加）、△（未定）、×（不参加）で回答できます。",
+    image: "✅",
   },
   {
     title: "日程を確定",
-    content: "参加状況を確認して、「この日時で確定」ボタンでイベントを確定できます。",
-    image: "🎉"
-  }
+    content:
+      "参加状況を確認して、「この日時で確定」ボタンでイベントを確定できます。",
+    image: "🎉",
+  },
 ];
 
-export default function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
+export default function OnboardingModal({
+  isOpen,
+  onClose,
+}: OnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
   const handleNext = () => {
@@ -81,7 +87,7 @@ export default function OnboardingModal({ isOpen, onClose }: OnboardingModalProp
           <p className="text-gray-600 text-center leading-relaxed">
             {currentStepData.content}
           </p>
-          
+
           {/* プログレスバー */}
           <div className="flex justify-center space-x-2">
             {onboardingSteps.map((_, index) => (
@@ -103,13 +109,10 @@ export default function OnboardingModal({ isOpen, onClose }: OnboardingModalProp
             >
               スキップ
             </Button>
-            
+
             <div className="flex space-x-2">
               {!isFirstStep && (
-                <Button
-                  variant="outline"
-                  onClick={handlePrevious}
-                >
+                <Button variant="outline" onClick={handlePrevious}>
                   戻る
                 </Button>
               )}

@@ -11,7 +11,9 @@ export default function Home() {
 
   // 初回ユーザーかどうかをチェック
   useEffect(() => {
-    const isOnboardingCompleted = localStorage.getItem("planly-onboarding-completed");
+    const isOnboardingCompleted = localStorage.getItem(
+      "planly-onboarding-completed",
+    );
     if (!isOnboardingCompleted) {
       setShowOnboarding(true);
     }
@@ -54,79 +56,79 @@ export default function Home() {
 
   return (
     <>
-      <OnboardingModal 
-        isOpen={showOnboarding} 
-        onClose={() => setShowOnboarding(false)} 
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
       />
       <div className="min-h-screen flex items-center justify-center pb-20 bg-gray-100">
-      <div className="text-center space-y-8 max-w-md w-full px-4">
-        <div className="space-y-4">
-          <h1 className="text-3xl font-bold text-gray-800">
-            ようこそ Planly へ
-          </h1>
-          <p className="text-gray-600 text-lg">
-            イベントの日程調整を簡単に管理できるアプリです
-          </p>
+        <div className="text-center space-y-8 max-w-md w-full px-4">
+          <div className="space-y-4">
+            <h1 className="text-3xl font-bold text-gray-800">
+              ようこそ Planly へ
+            </h1>
+            <p className="text-gray-600 text-lg">
+              イベントの日程調整を簡単に管理できるアプリです
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 mt-4">
+            <Button
+              variant="outline"
+              className="h-20 text-lg font-semibold relative overflow-hidden"
+              onClick={handleCreateEvent}
+            >
+              {/* 1番目（奇数）: 左下・右上 */}
+              <div
+                className={`absolute bottom-0 left-0 w-8 h-8 ${getRandomColor()} rounded-tr-full`}
+              ></div>
+              <div
+                className={`absolute top-0 right-0 w-8 h-8 ${getRandomColor()} rounded-bl-full`}
+              ></div>
+              <span className="relative z-10">イベント新規作成</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 text-lg font-semibold relative overflow-hidden"
+              onClick={handleMyEvents}
+            >
+              {/* 2番目（偶数）: 左上・右下 */}
+              <div
+                className={`absolute top-0 left-0 w-8 h-8 ${getRandomColor()} rounded-br-full`}
+              ></div>
+              <div
+                className={`absolute bottom-0 right-0 w-8 h-8 ${getRandomColor()} rounded-tl-full`}
+              ></div>
+              <span className="relative z-10">作成したイベント一覧</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 text-lg font-semibold relative overflow-hidden"
+              onClick={handleJoinEvents}
+            >
+              {/* 3番目（奇数）: 左下・右上 */}
+              <div
+                className={`absolute bottom-0 left-0 w-8 h-8 ${getRandomColor()} rounded-tr-full`}
+              ></div>
+              <div
+                className={`absolute top-0 right-0 w-8 h-8 ${getRandomColor()} rounded-bl-full`}
+              ></div>
+              <span className="relative z-10">参加するイベント一覧</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 text-lg font-semibold relative overflow-hidden"
+              onClick={handleJoinedEvents}
+            >
+              {/* 4番目（偶数）: 左上・右下 */}
+              <div
+                className={`absolute top-0 left-0 w-8 h-8 ${getRandomColor()} rounded-br-full`}
+              ></div>
+              <div
+                className={`absolute bottom-0 right-0 w-8 h-8 ${getRandomColor()} rounded-tl-full`}
+              ></div>
+              <span className="relative z-10">参加したイベント一覧</span>
+            </Button>
+          </div>
         </div>
-        <div className="grid grid-cols-1 gap-4 mt-4">
-          <Button
-            variant="outline"
-            className="h-20 text-lg font-semibold relative overflow-hidden"
-            onClick={handleCreateEvent}
-          >
-            {/* 1番目（奇数）: 左下・右上 */}
-            <div
-              className={`absolute bottom-0 left-0 w-8 h-8 ${getRandomColor()} rounded-tr-full`}
-            ></div>
-            <div
-              className={`absolute top-0 right-0 w-8 h-8 ${getRandomColor()} rounded-bl-full`}
-            ></div>
-            <span className="relative z-10">イベント新規作成</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-20 text-lg font-semibold relative overflow-hidden"
-            onClick={handleMyEvents}
-          >
-            {/* 2番目（偶数）: 左上・右下 */}
-            <div
-              className={`absolute top-0 left-0 w-8 h-8 ${getRandomColor()} rounded-br-full`}
-            ></div>
-            <div
-              className={`absolute bottom-0 right-0 w-8 h-8 ${getRandomColor()} rounded-tl-full`}
-            ></div>
-            <span className="relative z-10">作成したイベント一覧</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-20 text-lg font-semibold relative overflow-hidden"
-            onClick={handleJoinEvents}
-          >
-            {/* 3番目（奇数）: 左下・右上 */}
-            <div
-              className={`absolute bottom-0 left-0 w-8 h-8 ${getRandomColor()} rounded-tr-full`}
-            ></div>
-            <div
-              className={`absolute top-0 right-0 w-8 h-8 ${getRandomColor()} rounded-bl-full`}
-            ></div>
-            <span className="relative z-10">参加するイベント一覧</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-20 text-lg font-semibold relative overflow-hidden"
-            onClick={handleJoinedEvents}
-          >
-            {/* 4番目（偶数）: 左上・右下 */}
-            <div
-              className={`absolute top-0 left-0 w-8 h-8 ${getRandomColor()} rounded-br-full`}
-            ></div>
-            <div
-              className={`absolute bottom-0 right-0 w-8 h-8 ${getRandomColor()} rounded-tl-full`}
-            ></div>
-            <span className="relative z-10">参加したイベント一覧</span>
-          </Button>
-        </div>
-      </div>
       </div>
     </>
   );

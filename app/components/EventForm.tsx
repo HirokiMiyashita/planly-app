@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useRandomColors } from "@/hooks/useRandomColors";
 
 export default function EventForm() {
   const formRef = useRef<HTMLFormElement>(null);
+  const { getColor } = useRandomColors({ count: 2 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -302,11 +304,18 @@ export default function EventForm() {
         <div className="flex gap-3 pt-4">
           <Button
             type="submit"
+            variant="outline"
             size="lg"
-            className="w-[80%] mx-auto py-4 h-auto"
+            className="text-lg font-semibold relative overflow-hidden w-[80%] mx-auto py-4 h-auto"
             disabled={isSubmitting}
             color="primary"
           >
+            <span
+              className={`absolute bottom-0 left-0 w-8 h-8 ${getColor(0)} rounded-tr-full`}
+            ></span>
+            <span
+              className={`absolute top-0 right-0 w-8 h-8 ${getColor(1)} rounded-bl-full`}
+            ></span>
             {isSubmitting ? "登録中..." : "登録"}
           </Button>
         </div>

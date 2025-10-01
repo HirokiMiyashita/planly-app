@@ -1,41 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import OnboardingModal from "@/app/components/OnboardingModal";
 import { Button } from "@/components/ui/button";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useRandomColors } from "@/hooks/useRandomColors";
 
 export default function Home() {
   const router = useRouter();
   const { isOpen, closeOnboarding } = useOnboarding();
-  const [colors, setColors] = useState<string[]>([]);
-
-  // クライアントサイドでのみランダムな色を生成
-  useEffect(() => {
-    const colorOptions = [
-      "bg-red-500",
-      "bg-blue-500",
-      "bg-green-500",
-      "bg-yellow-500",
-      "bg-purple-500",
-      "bg-pink-500",
-      "bg-indigo-500",
-      "bg-teal-500",
-      "bg-orange-500",
-      "bg-cyan-500",
-      "bg-emerald-500",
-      "bg-violet-500",
-    ];
-
-    // 4つのボタン分の色を事前に生成
-    const generatedColors = Array.from(
-      { length: 8 },
-      () => colorOptions[Math.floor(Math.random() * colorOptions.length)],
-    );
-
-    setColors(generatedColors);
-  }, []);
+  const { getColor } = useRandomColors({ count: 8 });
 
   const handleCreateEvent = () => {
     router.push("/createEvent");
@@ -74,10 +48,10 @@ export default function Home() {
             >
               {/* 1番目（奇数）: 左下・右上 */}
               <span
-                className={`absolute bottom-0 left-0 w-8 h-8 ${colors[0] || "bg-gray-300"} rounded-tr-full`}
+                className={`absolute bottom-0 left-0 w-8 h-8 ${getColor(0)} rounded-tr-full`}
               ></span>
               <span
-                className={`absolute top-0 right-0 w-8 h-8 ${colors[1] || "bg-gray-300"} rounded-bl-full`}
+                className={`absolute top-0 right-0 w-8 h-8 ${getColor(1)} rounded-bl-full`}
               ></span>
               <span className="relative z-10">イベント新規作成</span>
             </Button>
@@ -88,10 +62,10 @@ export default function Home() {
             >
               {/* 2番目（偶数）: 左上・右下 */}
               <span
-                className={`absolute top-0 left-0 w-8 h-8 ${colors[2] || "bg-gray-300"} rounded-br-full`}
+                className={`absolute top-0 left-0 w-8 h-8 ${getColor(2)} rounded-br-full`}
               ></span>
               <span
-                className={`absolute bottom-0 right-0 w-8 h-8 ${colors[3] || "bg-gray-300"} rounded-tl-full`}
+                className={`absolute bottom-0 right-0 w-8 h-8 ${getColor(3)} rounded-tl-full`}
               ></span>
               <span className="relative z-10">作成したイベント一覧</span>
             </Button>
@@ -102,10 +76,10 @@ export default function Home() {
             >
               {/* 3番目（奇数）: 左下・右上 */}
               <span
-                className={`absolute bottom-0 left-0 w-8 h-8 ${colors[4] || "bg-gray-300"} rounded-tr-full`}
+                className={`absolute bottom-0 left-0 w-8 h-8 ${getColor(4)} rounded-tr-full`}
               ></span>
               <span
-                className={`absolute top-0 right-0 w-8 h-8 ${colors[5] || "bg-gray-300"} rounded-bl-full`}
+                className={`absolute top-0 right-0 w-8 h-8 ${getColor(5)} rounded-bl-full`}
               ></span>
               <span className="relative z-10">参加するイベント一覧</span>
             </Button>
@@ -116,10 +90,10 @@ export default function Home() {
             >
               {/* 4番目（偶数）: 左上・右下 */}
               <span
-                className={`absolute top-0 left-0 w-8 h-8 ${colors[6] || "bg-gray-300"} rounded-br-full`}
+                className={`absolute top-0 left-0 w-8 h-8 ${getColor(6)} rounded-br-full`}
               ></span>
               <span
-                className={`absolute bottom-0 right-0 w-8 h-8 ${colors[7] || "bg-gray-300"} rounded-tl-full`}
+                className={`absolute bottom-0 right-0 w-8 h-8 ${getColor(7)} rounded-tl-full`}
               ></span>
               <span className="relative z-10">参加したイベント一覧</span>
             </Button>

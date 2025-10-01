@@ -6,6 +6,7 @@ import { updateEvent } from "@/app/actions/event/updateEvent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import LoadingOverlay from "@/components/ui/loading-overlay";
 import { Textarea } from "@/components/ui/textarea";
 import type { Event } from "@/types/event";
 
@@ -32,8 +33,10 @@ export default function EventEditForm({
       end_at: slot.end_at,
     })),
   );
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSaveEdit = async () => {
+    setIsLoading(true);
     try {
       const result = await updateEvent(event.id.toString(), {
         title: editData.title,
@@ -56,6 +59,8 @@ export default function EventEditForm({
       toast.error("更新に失敗しました", {
         className: "bg-red-500 text-white",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -82,151 +87,171 @@ export default function EventEditForm({
   };
 
   return (
-    <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-      <h4 className="font-semibold text-sm text-gray-700 mb-3">イベント編集</h4>
+    <>
+      <LoadingOverlay isLoading={isLoading} message="イベントを更新中..." />
+      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+        <h4 className="font-semibold text-sm text-gray-700 mb-3">
+          イベント編集
+        </h4>
 
-      <div className="space-y-3">
-        <div>
-          <Label
-            className="block text-xs font-medium text-gray-700 mb-1"
-            htmlFor="title"
-          >
-            イベント名
-          </Label>
-          <Input
-            value={editData.title}
-            onChange={(e) =>
-              setEditData({ ...editData, title: e.target.value })
-            }
-            placeholder="イベント名を入力"
-            className="text-sm bg-white"
-          />
-        </div>
-
-        <div>
-          <Label
-            className="block text-xs font-medium text-gray-700 mb-1"
-            htmlFor="description"
-          >
-            説明
-          </Label>
-          <Textarea
-            value={editData.description}
-            onChange={(e) =>
-              setEditData({ ...editData, description: e.target.value })
-            }
-            placeholder="イベントの説明を入力"
-            className="text-sm min-h-[60px] bg-white"
-          />
-        </div>
-
-        {/* スロット編集 */}
-        <div>
-          <div className="flex justify-between items-center mb-2">
+        <div className="space-y-3">
+          <div>
             <Label
-              className="block text-xs font-medium text-gray-700"
-              htmlFor="slots"
+              className="block text-xs font-medium text-gray-700 mb-1"
+              htmlFor="title"
             >
-              日時スロット
+              イベント名
             </Label>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={addSlot}
-              className="text-xs"
-            >
-              + 追加
-            </Button>
+            <Input
+              value={editData.title}
+              onChange={(e) =>
+                setEditData({ ...editData, title: e.target.value })
+              }
+              placeholder="イベント名を入力"
+              className="text-sm bg-white"
+              disabled={isLoading}
+            />
           </div>
 
-          <div className="space-y-3 max-h-48 overflow-y-auto">
-            {editSlots.map((slot, index) => (
-              <div key={slot.id} className="bg-white rounded border p-3">
-                <div className="grid grid-cols-1 gap-3">
-                  {/* 日付 */}
-                  <div>
-                    <Label
-                      className="block text-xs font-medium text-gray-600 mb-1"
-                      htmlFor="day"
-                    >
-                      日付
-                    </Label>
-                    <Input
-                      type="date"
-                      value={slot.day}
-                      onChange={(e) => updateSlot(index, "day", e.target.value)}
-                      className="text-xs bg-white"
-                    />
-                  </div>
+          <div>
+            <Label
+              className="block text-xs font-medium text-gray-700 mb-1"
+              htmlFor="description"
+            >
+              説明
+            </Label>
+            <Textarea
+              value={editData.description}
+              onChange={(e) =>
+                setEditData({ ...editData, description: e.target.value })
+              }
+              placeholder="イベントの説明を入力"
+              className="text-sm min-h-[60px] bg-white"
+              disabled={isLoading}
+            />
+          </div>
 
-                  {/* 時間 */}
-                  <div className="grid grid-cols-2 gap-2">
+          {/* スロット編集 */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <Label
+                className="block text-xs font-medium text-gray-700"
+                htmlFor="slots"
+              >
+                日時スロット
+              </Label>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={addSlot}
+                className="text-xs"
+                disabled={isLoading}
+              >
+                + 追加
+              </Button>
+            </div>
+
+            <div className="space-y-3 max-h-48 overflow-y-auto">
+              {editSlots.map((slot, index) => (
+                <div key={slot.id} className="bg-white rounded border p-3">
+                  <div className="grid grid-cols-1 gap-3">
+                    {/* 日付 */}
                     <div>
                       <Label
                         className="block text-xs font-medium text-gray-600 mb-1"
-                        htmlFor="start_at"
+                        htmlFor="day"
                       >
-                        開始時間
+                        日付
                       </Label>
                       <Input
-                        type="time"
-                        value={slot.start_at}
+                        type="date"
+                        value={slot.day}
                         onChange={(e) =>
-                          updateSlot(index, "start_at", e.target.value)
+                          updateSlot(index, "day", e.target.value)
                         }
-                        className="text-xs"
+                        className="text-xs bg-white"
+                        disabled={isLoading}
                       />
                     </div>
-                    <div>
-                      <Label
-                        className="block text-xs font-medium text-gray-600 mb-1"
-                        htmlFor="end_at"
-                      >
-                        終了時間
-                      </Label>
-                      <Input
-                        type="time"
-                        value={slot.end_at}
-                        onChange={(e) =>
-                          updateSlot(index, "end_at", e.target.value)
-                        }
-                        className="text-xs"
-                      />
-                    </div>
-                  </div>
 
-                  {/* 削除ボタン */}
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => removeSlot(index)}
-                      className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      削除
-                    </Button>
+                    {/* 時間 */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label
+                          className="block text-xs font-medium text-gray-600 mb-1"
+                          htmlFor="start_at"
+                        >
+                          開始時間
+                        </Label>
+                        <Input
+                          type="time"
+                          value={slot.start_at}
+                          onChange={(e) =>
+                            updateSlot(index, "start_at", e.target.value)
+                          }
+                          className="text-xs"
+                          disabled={isLoading}
+                        />
+                      </div>
+                      <div>
+                        <Label
+                          className="block text-xs font-medium text-gray-600 mb-1"
+                          htmlFor="end_at"
+                        >
+                          終了時間
+                        </Label>
+                        <Input
+                          type="time"
+                          value={slot.end_at}
+                          onChange={(e) =>
+                            updateSlot(index, "end_at", e.target.value)
+                          }
+                          className="text-xs"
+                          disabled={isLoading}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 削除ボタン */}
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => removeSlot(index)}
+                        className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                        disabled={isLoading}
+                      >
+                        削除
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="mt-4 flex gap-2">
-        <Button size="sm" variant="outline" onClick={onClose}>
-          キャンセル
-        </Button>
-        <Button
-          size="sm"
-          className="bg-blue-500 hover:bg-blue-600 text-white"
-          onClick={handleSaveEdit}
-        >
-          保存
-        </Button>
+        <div className="mt-4 flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onClose}
+            disabled={isLoading}
+          >
+            キャンセル
+          </Button>
+          <Button
+            size="sm"
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+            onClick={handleSaveEdit}
+            disabled={isLoading}
+          >
+            保存
+          </Button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

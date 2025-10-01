@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 
 interface CandidateDateSelectorProps {
   onAddDate: (date: string) => void;
+  disabled?: boolean;
 }
 
 export default function CandidateDateSelector({
   onAddDate,
+  disabled = false,
 }: CandidateDateSelectorProps) {
   const [customDate, setCustomDate] = useState("");
 
@@ -49,6 +51,7 @@ export default function CandidateDateSelector({
           className="text-xs"
           onClick={() => onAddDate(getToday())}
           title="今日の日付を候補日として追加"
+          disabled={disabled}
         >
           今日を追加
         </Button>
@@ -59,6 +62,7 @@ export default function CandidateDateSelector({
           className="text-xs"
           onClick={() => onAddDate(getTomorrow())}
           title="明日の日付を候補日として追加"
+          disabled={disabled}
         >
           明日を追加
         </Button>
@@ -69,6 +73,7 @@ export default function CandidateDateSelector({
           className="text-xs"
           onClick={() => onAddDate(getNextWeek())}
           title="来週の日付を候補日として追加"
+          disabled={disabled}
         >
           来週を追加
         </Button>
@@ -81,6 +86,7 @@ export default function CandidateDateSelector({
           className="flex-1"
           value={customDate}
           onChange={(e) => setCustomDate(e.target.value)}
+          disabled={disabled}
         />
         <Button
           type="button"
@@ -88,6 +94,7 @@ export default function CandidateDateSelector({
           size="sm"
           className="text-xs"
           onClick={handleAddCustomDate}
+          disabled={disabled}
         >
           追加
         </Button>

@@ -14,12 +14,14 @@ interface CandidateDateListProps {
     field: "startTime" | "endTime",
     value: string,
   ) => void;
+  disabled?: boolean;
 }
 
 export default function CandidateDateList({
   candidateDates,
   onRemoveDate,
   onUpdateTime,
+  disabled = false,
 }: CandidateDateListProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -54,6 +56,7 @@ export default function CandidateDateList({
                 type="button"
                 className="text-white hover:text-red-700 text-sm bg-red-500"
                 onClick={() => onRemoveDate(candidate.date)}
+                disabled={disabled}
               >
                 ×
               </Button>
@@ -68,6 +71,7 @@ export default function CandidateDateList({
                     onUpdateTime(candidate.date, "startTime", e.target.value)
                   }
                   className="text-xs"
+                  disabled={disabled}
                 />
               </div>
               <div className="space-y-1 w-[85%]">
@@ -79,6 +83,7 @@ export default function CandidateDateList({
                     onUpdateTime(candidate.date, "endTime", e.target.value)
                   }
                   className="text-xs"
+                  disabled={disabled}
                 />
               </div>
             </div>

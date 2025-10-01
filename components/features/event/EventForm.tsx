@@ -6,6 +6,7 @@ import { createEvent } from "@/app/actions/event/createEvent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import LoadingOverlay from "@/components/ui/loading-overlay";
 import { Textarea } from "@/components/ui/textarea";
 import { useRandomColors } from "@/hooks/useRandomColors";
 import type { CandidateDate } from "@/types/event";
@@ -87,92 +88,101 @@ export default function EventForm() {
   };
 
   return (
-    <main className="p-4 space-y-6 pb-20">
-      {message && (
-        <div
-          className={`p-4 rounded-lg ${
-            message.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200"
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
-
-      <form ref={formRef} action={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <Label
-            htmlFor="eventName"
-            className="text-sm font-medium border-l-4 border-red-400 pl-2"
+    <>
+      <LoadingOverlay isLoading={isSubmitting} message="イベントを作成中..." />
+      <main className="p-4 space-y-6 pb-20">
+        {message && (
+          <div
+            className={`p-4 rounded-lg ${
+              message.type === "success"
+                ? "bg-green-50 text-green-800 border border-green-200"
+                : "bg-red-50 text-red-800 border border-red-200"
+            }`}
           >
-            イベント名
-          </Label>
-          <p className="text-xs text-gray-500">例) お盆のテニスの開催予定</p>
-          <Input
-            id="eventName"
-            name="eventName"
-            placeholder="イベント名を入力してください"
-            value={eventName}
-            onChange={(e) => setEventName(e.target.value)}
-            required
-          />
-        </div>
+            {message.text}
+          </div>
+        )}
 
-        <div className="space-y-2">
-          <Label
-            htmlFor="description"
-            className="text-sm font-medium border-l-4 border-red-400 pl-2"
-          >
-            説明文
-          </Label>
-          <p className="text-xs text-gray-500">
-            例) 門真市のテニスコートで試合形式で開催します
-          </p>
-          <Textarea
-            id="description"
-            name="description"
-            placeholder="イベントの詳細を入力してください"
-            className="min-h-[100px]"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-3">
-          <Label className="text-sm font-medium border-l-4 border-red-400 pl-2">
-            開催候補日時
-          </Label>
-
-          <div className="space-y-3">
-            <CandidateDateSelector onAddDate={addCandidateDate} />
-            <CandidateDateList
-              candidateDates={candidateDates}
-              onRemoveDate={removeCandidateDate}
-              onUpdateTime={updateCandidateTime}
+        <form ref={formRef} action={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label
+              htmlFor="eventName"
+              className="text-sm font-medium border-l-4 border-red-400 pl-2"
+            >
+              イベント名
+            </Label>
+            <p className="text-xs text-gray-500">例) お盆のテニスの開催予定</p>
+            <Input
+              id="eventName"
+              name="eventName"
+              placeholder="イベント名を入力してください"
+              value={eventName}
+              onChange={(e) => setEventName(e.target.value)}
+              required
+              disabled={isSubmitting}
             />
           </div>
-        </div>
 
-        <div className="flex gap-3 pt-4 mb-6">
-          <Button
-            type="submit"
-            variant="outline"
-            size="lg"
-            className="text-lg font-semibold relative overflow-hidden w-[80%] mx-auto py-4 h-auto"
-            disabled={isSubmitting}
-            color="primary"
-          >
-            <span
-              className={`absolute bottom-0 left-0 w-8 h-8 ${getColor(0)} rounded-tr-full`}
-            ></span>
-            <span
-              className={`absolute top-0 right-0 w-8 h-8 ${getColor(1)} rounded-bl-full`}
-            ></span>
-            {isSubmitting ? "登録中..." : "登録"}
-          </Button>
-        </div>
-      </form>
-    </main>
+          <div className="space-y-2">
+            <Label
+              htmlFor="description"
+              className="text-sm font-medium border-l-4 border-red-400 pl-2"
+            >
+              説明文
+            </Label>
+            <p className="text-xs text-gray-500">
+              例) 門真市のテニスコートで試合形式で開催します
+            </p>
+            <Textarea
+              id="description"
+              name="description"
+              placeholder="イベントの詳細を入力してください"
+              className="min-h-[100px]"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={isSubmitting}
+            />
+          </div>
+
+          <div className="space-y-3">
+            <Label className="text-sm font-medium border-l-4 border-red-400 pl-2">
+              開催候補日時
+            </Label>
+
+            <div className="space-y-3">
+              <CandidateDateSelector
+                onAddDate={addCandidateDate}
+                disabled={isSubmitting}
+              />
+              <CandidateDateList
+                candidateDates={candidateDates}
+                onRemoveDate={removeCandidateDate}
+                onUpdateTime={updateCandidateTime}
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4 mb-6">
+            <Button
+              type="submit"
+              variant="outline"
+              size="lg"
+              className="text-lg font-semibold relative overflow-hidden w-[80%] mx-auto py-4 h-auto"
+              disabled={isSubmitting}
+              color="primary"
+            >
+              <span
+                className={`absolute bottom-0 left-0 w-8 h-8 ${getColor(0)} rounded-tr-full`}
+              ></span>
+              <span
+                className={`absolute top-0 right-0 w-8 h-8 ${getColor(1)} rounded-bl-full`}
+              ></span>
+              {isSubmitting ? "登録中..." : "登録"}
+            </Button>
+          </div>
+        </form>
+      </main>
+    </>
   );
 }

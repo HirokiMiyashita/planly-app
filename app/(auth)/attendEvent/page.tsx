@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getAttendEvent } from "@/app/actions/event/getAttendEvent";
+import { getUpcomingEvents } from "@/app/actions/event/getUpcomingEvents";
 import Header from "@/components/features/auth/Header";
 import EventCard from "@/components/features/event/EventCard";
 
@@ -29,12 +29,11 @@ function LoadingSkeleton() {
 }
 
 async function EventList() {
-  const events = await getAttendEvent();
+  const events = await getUpcomingEvents();
 
   if (events.length === 0) {
     return (
       <div className="p-4 pb-20">
-        <h1 className="text-2xl font-bold mb-4">参加するイベント</h1>
         <div className="text-center py-8">
           <p className="text-gray-500">参加するイベントはありません</p>
         </div>

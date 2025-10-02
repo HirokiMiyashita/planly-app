@@ -43,7 +43,12 @@ export default function Participation({ params }: ParticipationPageProps) {
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-3">候補日程</h3>
           {event.slots.length > 0 ? (
-            <ParticipationForm slots={event.slots} eventId={id} />
+            <ParticipationForm
+              slots={event.slots}
+              eventId={id}
+              currentUserParticipation={event.currentUserParticipation}
+              isUserRegistered={event.isUserRegistered}
+            />
           ) : (
             <p className="text-gray-500">候補日程が設定されていません。</p>
           )}

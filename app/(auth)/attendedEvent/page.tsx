@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getAttendEvent } from "@/app/actions/event/getAttendEvent";
+import { getPastEvents } from "@/app/actions/event/getPastEvents";
 import Header from "@/components/features/auth/Header";
 import EventCard from "@/components/features/event/EventCard";
 
@@ -29,7 +29,7 @@ function LoadingSkeleton() {
 }
 
 async function EventList() {
-  const events = await getAttendEvent(true);
+  const events = await getPastEvents();
 
   if (events.length === 0) {
     return (

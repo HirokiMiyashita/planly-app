@@ -1,13 +1,21 @@
+"use server";
+
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 
-export async function getAttendEvent(before: boolean = false) {
+/**
+ * 参加したイベント（過去のイベント）を取得
+ * - 確定済みで、過去の確定スロットのイベントのみを取得
+ * - confirmedSlotの日付で判定するため、確定済みイベントのみ
+ */
+export async function getPastEvents() {
   const session = await getServerSession(authOptions);
   const lineUserId = session?.user?.lineUserId;
   if (!lineUserId) {
     return [];
   }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0); // 今日の開始時刻に設定
 
@@ -22,15 +30,14 @@ export async function getAttendEvent(before: boolean = false) {
           },
         },
       },
-      confirmedSlot: true,
+      confirmedSlot: true, // 確定スロット情報を取得
     },
     where: {
-      isConfirmed: true,
+      isConfirmed: true, // 確定済みのイベントのみ
       confirmedSlot: {
-        day: before
-          ? { lt: today } // 過去のイベント（今日より前）
-          : { gte: today }, // 未来のイベント（今日以降）
+        day: { lt: today }, // 過去の確定スロット（今日より前）
       },
+      // 現在のユーザーが参加しているイベント
       slots: {
         some: {
           participations: {

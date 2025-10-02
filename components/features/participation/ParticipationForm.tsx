@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -7,31 +8,43 @@ import {
   participationEvent,
 } from "@/app/actions/event/participationEvent";
 import { Button } from "@/components/ui/button";
+import type { Participation, Slot } from "@/types/event";
 
 // import { useValidationStore } from "@/stores/validationStore"; // 削除されたためコメントアウト
 
 type LocalParticipationStatus = "○" | "△" | "×" | null;
 
-interface Slot {
-  id: number;
-  day: string;
-  start_at: string;
-  end_at: string;
-}
-
 interface ParticipationFormProps {
   slots: Slot[];
   eventId: string;
+  currentUserParticipation?: Participation[];
+  isUserRegistered?: boolean;
 }
 
 export default function ParticipationForm({
   slots,
   eventId,
+  currentUserParticipation = [],
+  isUserRegistered = false,
 }: ParticipationFormProps) {
-  // 各スロットの参加状況を管理
+  const router = useRouter();
+  // 各スロットの参加状況を管理（既存の参加状況を初期値として設定）
   const [participations, setParticipations] = useState<
     Record<number, LocalParticipationStatus>
-  >({});
+  >(() => {
+    const initialParticipations: Record<number, LocalParticipationStatus> = {};
+    currentUserParticipation.forEach((participation) => {
+      // スロットIDを取得するために、slotsから該当するスロットを探す
+      const slot = slots.find((s) =>
+        s.participations.some((p) => p.id === participation.id),
+      );
+      if (slot) {
+        initialParticipations[slot.id] =
+          participation.status as LocalParticipationStatus;
+      }
+    });
+    return initialParticipations;
+  });
 
   // バリデーション状態（useValidationStoreの代替）
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -107,6 +120,7 @@ export default function ParticipationForm({
 
       if (result.success) {
         toast.success("参加状況を保存しました");
+        router.refresh();
       } else {
         toast.error(result.message);
       }
@@ -130,55 +144,138 @@ export default function ParticipationForm({
     }
   };
 
+  // 回答済みかどうかを判定する関数
+  const isAlreadyAnswered = (slotId: number) => {
+    return (
+      participations[slotId] !== null && participations[slotId] !== undefined
+    );
+  };
+
+  // 回答済みのスロット数をカウント
+  const answeredSlotsCount = Object.values(participations).filter(
+    (status) => status !== null && status !== undefined,
+  ).length;
+
   return (
-    <div className="space-y-2">
-      {slots.map((slot) => (
-        <div
-          key={slot.id}
-          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-        >
-          <div>
-            <p className="font-medium">
-              {new Date(slot.day).toLocaleDateString("ja-JP", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                weekday: "long",
-              })}
-            </p>
-            <p className="text-sm text-gray-600">
-              {slot.start_at} - {slot.end_at}
-            </p>
-          </div>
-          <div className="flex flex-col items-end gap-1">
-            <div className="flex gap-2">
-              {(["○", "△", "×"] as const).map((status) => (
-                <Button
-                  key={status}
-                  size="sm"
-                  variant={
-                    participations[slot.id] === status ? "default" : "outline"
-                  }
-                  className={`w-10 h-10 p-0 text-lg font-bold ${
-                    participations[slot.id] === status
-                      ? getStatusStyle(status)
-                      : "border-gray-300 hover:bg-gray-50"
-                  }`}
-                  onClick={() => updateParticipation(slot.id, status)}
-                >
-                  {status}
-                </Button>
-              ))}
-            </div>
-            {getError(`slot_${slot.id}`) && (
-              <p className="text-xs text-red-500">
-                {getError(`slot_${slot.id}`)}
+    <div className="space-y-4">
+      {/* 参加登録状況 */}
+      <div
+        className={`p-3 rounded-lg ${
+          isUserRegistered
+            ? "bg-green-50 border border-green-200"
+            : "bg-yellow-50 border border-yellow-200"
+        }`}
+      >
+        <div className="flex items-center gap-2">
+          {isUserRegistered ? (
+            <>
+              <span className="text-green-600">✓</span>
+              <p className="text-sm text-green-800 font-medium">参加登録済み</p>
+            </>
+          ) : (
+            <>
+              <span className="text-yellow-600">×</span>
+              <p className="text-sm text-yellow-800 font-medium">
+                まだ参加登録していません
               </p>
+            </>
+          )}
+        </div>
+      </div>
+      {slots.map((slot) => {
+        const isAnswered = isAlreadyAnswered(slot.id);
+        return (
+          <div
+            key={slot.id}
+            className={`p-4 rounded-lg space-y-3 ${
+              isAnswered ? "bg-green-50 border border-green-200" : "bg-gray-50"
+            }`}
+          >
+            {/* 日時情報と回答状況 */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div>
+                  <p className="font-medium">
+                    {new Date(slot.day).toLocaleDateString("ja-JP", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      weekday: "long",
+                    })}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {slot.start_at} - {slot.end_at}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <div className="flex gap-2">
+                  {(["○", "△", "×"] as const).map((status) => (
+                    <Button
+                      key={status}
+                      size="sm"
+                      variant={
+                        participations[slot.id] === status
+                          ? "default"
+                          : "outline"
+                      }
+                      className={`w-10 h-10 p-0 text-lg font-bold ${
+                        participations[slot.id] === status
+                          ? getStatusStyle(status)
+                          : "border-gray-300 hover:bg-gray-50"
+                      }`}
+                      onClick={() => updateParticipation(slot.id, status)}
+                    >
+                      {status}
+                    </Button>
+                  ))}
+                </div>
+                {getError(`slot_${slot.id}`) && (
+                  <p className="text-xs text-red-500">
+                    {getError(`slot_${slot.id}`)}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* 参加状況表示 */}
+            {slot.participations.length > 0 && (
+              <div className="border-t pt-3">
+                <p className="text-sm font-medium text-gray-700 mb-2">
+                  回答状況:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {slot.participations.map((participation) => (
+                    <span
+                      key={participation.id}
+                      className={`text-xs px-2 py-1 rounded ${
+                        participation.status === "○"
+                          ? "bg-green-100 text-green-800"
+                          : participation.status === "△"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {participation.userName || "不明"} {participation.status}
+                    </span>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
-        </div>
-      ))}
-      <Button onClick={handleParticipation}>参加</Button>
+        );
+      })}
+
+      <Button
+        onClick={handleParticipation}
+        className={`w-full ${
+          answeredSlotsCount === slots.length
+            ? "bg-blue-500 hover:bg-blue-600"
+            : "bg-green-500 hover:bg-green-600"
+        }`}
+      >
+        {answeredSlotsCount === slots.length ? "回答を更新" : "参加状況を保存"}
+      </Button>
     </div>
   );
 }

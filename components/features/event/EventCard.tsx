@@ -79,7 +79,7 @@ export default function EventCard({ event, isCreator }: EventCardProps) {
           >
             {showDetails ? "参加状況を閉じる" : "参加状況を見る"}
           </Button>
-          {isCreator && (
+          {isCreator && !event.isConfirmed && (
             <>
               <Button
                 size="sm"

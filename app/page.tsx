@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { markFriendAdded } from "@/app/actions/friendActions";
 import FriendAddAlert from "@/components/features/auth/FriendAddAlert";
 import OnboardingModal from "@/components/features/auth/OnboardingModal";
@@ -14,6 +15,7 @@ export default function Home() {
   const { user } = useAuth();
   const { isOpen, closeOnboarding } = useOnboarding();
   const { getColor } = useRandomColors({ count: 8 });
+  const { update: updateSession } = useSession();
 
   const handleCreateEvent = () => {
     router.push("/createEvent");
@@ -36,6 +38,8 @@ export default function Home() {
     try {
       const result = await markFriendAdded();
       if (result.success) {
+        // セッションを更新してユーザー情報を再取得
+        await updateSession();
         router.refresh();
       } else {
         console.error("友達追加状態の更新に失敗しました:", result.error);

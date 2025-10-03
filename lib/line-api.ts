@@ -2,12 +2,13 @@ import axios from "axios";
 
 const CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
-if (!CHANNEL_ACCESS_TOKEN) {
-  throw new Error("LINE_CHANNEL_ACCESS_TOKEN is not set");
-}
-
 // プッシュメッセージを送信
 export async function sendPushMessage(userId: string, message: string) {
+  if (!CHANNEL_ACCESS_TOKEN) {
+    console.error("LINE_CHANNEL_ACCESS_TOKEN is not set");
+    return { success: false, error: "LINE_CHANNEL_ACCESS_TOKEN is not set" };
+  }
+
   try {
     const response = await axios.post(
       "https://api.line.me/v2/bot/message/push",

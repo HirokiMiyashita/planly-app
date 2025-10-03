@@ -41,6 +41,7 @@ export interface UpdateEventData {
 }
 
 export interface CandidateDate {
+  id?: number;
   date: string;
   startTime: string;
   endTime: string;

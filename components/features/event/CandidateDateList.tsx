@@ -8,7 +8,7 @@ import type { CandidateDate } from "@/types/event";
 
 interface CandidateDateListProps {
   candidateDates: CandidateDate[];
-  onRemoveDate: (date: string) => void;
+  onRemoveDate: (id: number) => void;
   onUpdateTime: (
     date: string,
     field: "startTime" | "endTime",
@@ -47,7 +47,10 @@ export default function CandidateDateList({
       <div className="text-xs text-gray-500">選択された候補日:</div>
       <div className="space-y-2">
         {candidateDates.map((candidate) => (
-          <div key={candidate.date} className="border rounded-lg p-3 space-y-2">
+          <div
+            key={candidate.id || candidate.date}
+            className="border rounded-lg p-3 space-y-2"
+          >
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">
                 {formatDate(candidate.date)}
@@ -55,7 +58,7 @@ export default function CandidateDateList({
               <Button
                 type="button"
                 className="text-white hover:text-red-700 text-sm bg-red-500"
-                onClick={() => onRemoveDate(candidate.date)}
+                onClick={() => onRemoveDate(candidate.id || 0)}
                 disabled={disabled}
               >
                 ×

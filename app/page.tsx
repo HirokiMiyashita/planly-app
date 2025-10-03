@@ -1,13 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { markFriendAdded } from "@/app/actions/friendActions";
+import FriendAddAlert from "@/components/features/auth/FriendAddAlert";
 import OnboardingModal from "@/components/features/auth/OnboardingModal";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useRandomColors } from "@/hooks/useRandomColors";
 
 export default function Home() {
   const router = useRouter();
+  const { user } = useAuth();
   const { isOpen, closeOnboarding } = useOnboarding();
   const { getColor } = useRandomColors({ count: 8 });
 
@@ -27,16 +31,30 @@ export default function Home() {
     router.push("/attendedEvent");
   };
 
+  const handleAddFriend = async () => {
+    window.open("https://line.me/R/ti/p/@511pngni", "_blank");
+    try {
+      const result = await markFriendAdded();
+      if (result.success) {
+        router.refresh();
+      } else {
+        console.error("友達追加状態の更新に失敗しました:", result.error);
+      }
+    } catch (error) {
+      console.error("友達追加状態の更新に失敗しました:", error);
+    }
+  };
+
   return (
     <>
       <OnboardingModal isOpen={isOpen} onClose={closeOnboarding} />
-      <div className="min-h-screen flex items-center justify-center pb-20 bg-gray-100">
+      <div className="min-h-screen flex items-center justify-center pb-20 bg-gray-100 pt-20">
         <div className="text-center space-y-8 max-w-md w-full px-4">
           <div className="space-y-4">
             <h1 className="text-3xl font-bold text-gray-800">
               ようこそ Planly へ
             </h1>
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-600 text-sm">
               イベントの日程調整を簡単に管理できるアプリです
             </p>
           </div>
@@ -97,6 +115,9 @@ export default function Home() {
               ></span>
               <span className="relative z-10">参加したイベント一覧</span>
             </Button>
+            {user && user.isFriendAdded === false && (
+              <FriendAddAlert onAddFriend={handleAddFriend} />
+            )}
           </div>
         </div>
       </div>

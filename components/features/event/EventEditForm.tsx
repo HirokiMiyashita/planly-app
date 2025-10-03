@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { updateEvent } from "@/app/actions/event/updateEvent";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ export default function EventEditForm({
   onClose,
   onSuccess,
 }: EventEditFormProps) {
+  const slotsContainerRef = useRef<HTMLDivElement>(null);
   const [editData, setEditData] = useState({
     title: event.title,
     description: event.description || "",
@@ -34,14 +35,56 @@ export default function EventEditForm({
     })),
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [shouldScroll, setShouldScroll] = useState(false);
+
+  // 追加ボタンが押された時だけスクロール
+  useEffect(() => {
+    if (shouldScroll && slotsContainerRef.current) {
+      setTimeout(() => {
+        slotsContainerRef.current?.scrollTo({
+          top: slotsContainerRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+        setShouldScroll(false); // スクロール後はフラグをリセット
+      }, 100);
+    }
+  }, [shouldScroll]);
 
   const handleSaveEdit = async () => {
     setIsLoading(true);
     try {
+      // 重複チェック
+      const duplicates = editSlots.filter((slot, index) => {
+        return editSlots.some(
+          (other, otherIndex) =>
+            otherIndex !== index &&
+            other.day === slot.day &&
+            other.start_at === slot.start_at &&
+            other.end_at === slot.end_at,
+        );
+      });
+
+      if (duplicates.length > 0) {
+        toast.error(
+          "同じ日付・同じ時間帯のスロットが重複しています。重複を削除してから保存してください。",
+          {
+            className: "bg-red-500 text-white",
+          },
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      // 新規スロットのIDを0に設定（データベースで自動生成される）
+      const processedSlots = editSlots.map((slot) => ({
+        ...slot,
+        id: slot.id > 1000000 ? 0 : slot.id, // 大きな数値の場合は0に設定
+      }));
+
       const result = await updateEvent(event.id.toString(), {
         title: editData.title,
         description: editData.description,
-        slots: editSlots,
+        slots: processedSlots,
       });
 
       if (result.success) {
@@ -68,12 +111,13 @@ export default function EventEditForm({
     setEditSlots([
       ...editSlots,
       {
-        id: 0,
+        id: Date.now() + Math.random(), // 一意のIDを生成
         day: new Date().toISOString().split("T")[0],
         start_at: "09:00",
         end_at: "18:00",
       },
     ]);
+    setShouldScroll(true); // スクロールフラグを設定
   };
 
   const removeSlot = (index: number) => {
@@ -152,10 +196,16 @@ export default function EventEditForm({
               </Button>
             </div>
 
-            <div className="space-y-3 max-h-48 overflow-y-auto">
+            <div
+              className="space-y-3 max-h-48 overflow-y-auto"
+              ref={slotsContainerRef}
+            >
               {editSlots.map((slot, index) => (
-                <div key={slot.id} className="bg-white rounded border p-3">
-                  <div className="grid grid-cols-1 gap-3">
+                <div
+                  key={slot.id}
+                  className="bg-white rounded border p-3 w-full"
+                >
+                  <div className="grid grid-cols-1 gap-3 w-full">
                     {/* 日付 */}
                     <div>
                       <Label
@@ -170,13 +220,13 @@ export default function EventEditForm({
                         onChange={(e) =>
                           updateSlot(index, "day", e.target.value)
                         }
-                        className="text-xs bg-white"
+                        className="text-xs bg-white w-full"
                         disabled={isLoading}
                       />
                     </div>
 
                     {/* 時間 */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div>
                         <Label
                           className="block text-xs font-medium text-gray-600 mb-1"
@@ -190,7 +240,7 @@ export default function EventEditForm({
                           onChange={(e) =>
                             updateSlot(index, "start_at", e.target.value)
                           }
-                          className="text-xs"
+                          className="text-xs w-full"
                           disabled={isLoading}
                         />
                       </div>
@@ -207,7 +257,7 @@ export default function EventEditForm({
                           onChange={(e) =>
                             updateSlot(index, "end_at", e.target.value)
                           }
-                          className="text-xs"
+                          className="text-xs w-full"
                           disabled={isLoading}
                         />
                       </div>

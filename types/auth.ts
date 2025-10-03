@@ -9,6 +9,7 @@ declare module "next-auth" {
       id: string;
       lineUserId: string;
       lineUserName: string;
+      isFriendAdded: boolean;
       image: string;
     } & DefaultSession["user"];
   }
@@ -16,6 +17,7 @@ declare module "next-auth" {
   interface User extends DefaultUser {
     lineUserId: string;
     lineUserName: string;
+    isFriendAdded: boolean;
   }
 }
 
@@ -23,5 +25,6 @@ declare module "next-auth/jwt" {
   interface JWT extends DefaultJWT {
     lineUserId: string;
     lineUserName: string;
+    isFriendAdded: boolean;
   }
 }

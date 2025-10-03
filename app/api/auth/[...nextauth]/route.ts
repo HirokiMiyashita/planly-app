@@ -29,6 +29,7 @@ export const authOptions: NextAuthOptions = {
             create: {
               id: profile.sub as string,
               name: profile.name as string,
+              isFriendAdded: false, // 新規ユーザーは友達追加未完了
             },
           });
           // User saved to database
@@ -44,6 +45,18 @@ export const authOptions: NextAuthOptions = {
       if (account && profile) {
         token.lineUserId = profile.sub as string;
         token.lineUserName = profile.name as string;
+
+        // 友達追加状況を取得
+        try {
+          const user = await prisma.user.findUnique({
+            where: { id: profile.sub as string },
+            select: { isFriendAdded: true },
+          });
+          token.isFriendAdded = user?.isFriendAdded || false;
+        } catch (error) {
+          console.error("Error fetching friend status:", error);
+          token.isFriendAdded = false;
+        }
       }
       return token;
     },
@@ -55,6 +68,7 @@ export const authOptions: NextAuthOptions = {
           ...session.user,
           lineUserId: token.lineUserId,
           lineUserName: token.lineUserName,
+          isFriendAdded: token.isFriendAdded,
         },
       };
     },

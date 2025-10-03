@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createEvent } from "@/app/actions/event/createEvent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,8 @@ import CandidateDateSelector from "./CandidateDateSelector";
 
 export default function EventForm() {
   const formRef = useRef<HTMLFormElement>(null);
+  const candidateListRef = useRef<HTMLDivElement>(null);
+  const topRef = useRef<HTMLDivElement>(null);
   const { getColor } = useRandomColors({ count: 2 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{
@@ -28,10 +30,11 @@ export default function EventForm() {
   const router = useRouter();
 
   const addCandidateDate = (date: string) => {
-    if (date && !candidateDates.some((candidate) => candidate.date === date)) {
+    if (date) {
       setCandidateDates([
         ...candidateDates,
         {
+          id: Date.now() + Math.random(), // 一意のIDを生成
           date: date,
           startTime: "09:00",
           endTime: "10:00",
@@ -40,9 +43,33 @@ export default function EventForm() {
     }
   };
 
-  const removeCandidateDate = (dateToRemove: string) => {
+  // 候補日が追加された時にスクロール
+  useEffect(() => {
+    if (candidateDates.length > 0 && candidateListRef.current) {
+      setTimeout(() => {
+        candidateListRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+        });
+      }, 100); // 少し遅延を入れてDOMの更新を待つ
+    }
+  }, [candidateDates.length]);
+
+  // エラーメッセージが表示された時に一番上までスクロール
+  useEffect(() => {
+    if (message && message.type === "error" && topRef.current) {
+      setTimeout(() => {
+        topRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    }
+  }, [message]);
+
+  const removeCandidateDate = (idToRemove: number) => {
     setCandidateDates(
-      candidateDates.filter((candidate) => candidate.date !== dateToRemove),
+      candidateDates.filter((candidate) => candidate.id !== idToRemove),
     );
   };
 
@@ -64,6 +91,26 @@ export default function EventForm() {
     setMessage(null);
 
     try {
+      // 重複チェック
+      const duplicates = candidateDates.filter((candidate, index) => {
+        return candidateDates.some(
+          (other, otherIndex) =>
+            otherIndex !== index &&
+            other.date === candidate.date &&
+            other.startTime === candidate.startTime &&
+            other.endTime === candidate.endTime,
+        );
+      });
+
+      if (duplicates.length > 0) {
+        setMessage({
+          type: "error",
+          text: "同じ日付・同じ時間帯の候補が重複しています。重複を削除してから登録してください。",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       // FormDataを作成
       const formData = new FormData();
       formData.append("eventName", eventName);
@@ -95,17 +142,19 @@ export default function EventForm() {
     <>
       <LoadingOverlay isLoading={isSubmitting} message="イベントを作成中..." />
       <main className="p-4 space-y-6 pb-20">
-        {message && (
-          <div
-            className={`p-4 rounded-lg ${
-              message.type === "success"
-                ? "bg-green-50 text-green-800 border border-green-200"
-                : "bg-red-50 text-red-800 border border-red-200"
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
+        <div ref={topRef}>
+          {message && (
+            <div
+              className={`p-4 rounded-lg ${
+                message.type === "success"
+                  ? "bg-green-50 text-green-800 border border-green-200"
+                  : "bg-red-50 text-red-800 border border-red-200"
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
+        </div>
 
         <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
@@ -167,7 +216,7 @@ export default function EventForm() {
             </div>
           </div>
 
-          <div className="flex gap-3 pt-4 mb-6">
+          <div className="flex gap-3 pt-4 mb-6" ref={candidateListRef}>
             <Button
               type="submit"
               variant="outline"

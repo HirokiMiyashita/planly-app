@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { markFriendAdded } from "@/app/actions/friendActions";
@@ -49,16 +50,20 @@ export default function Home() {
   return (
     <>
       <OnboardingModal isOpen={isOpen} onClose={closeOnboarding} />
-      <div className="min-h-screen flex items-center justify-center pb-20 bg-gray-100 pt-20">
-        <div className="text-center space-y-8 max-w-md w-full px-4">
-          <div className="space-y-4">
-            <h1 className="text-3xl font-bold text-gray-800">
-              ようこそ Planly へ
-            </h1>
-            <p className="text-gray-600 text-sm">
-              イベントの日程調整を簡単に管理できるアプリです
-            </p>
+      <div className="min-h-screen flex items-center justify-center pb-20 bg-gray-100 pt-10">
+        <div className="text-center space-y-2 max-w-md w-full px-4">
+          <div className="flex justify-center">
+            <Image
+              src="/logo.svg"
+              alt="Planly Logo"
+              width={120}
+              height={120}
+              className="w-30 h-30"
+            />
           </div>
+          <p className="text-gray-600 text-sm">
+            イベントの日程調整を簡単に管理できるアプリです
+          </p>
           <div className="grid grid-cols-1 gap-4 mt-4">
             <Button
               variant="outline"

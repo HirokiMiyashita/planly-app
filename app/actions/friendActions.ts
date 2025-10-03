@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
@@ -19,6 +20,9 @@ export async function markFriendAdded() {
       where: { id: session.user.lineUserId },
       data: { isFriendAdded: true },
     });
+
+    // セッションを更新するためにページを再検証
+    revalidatePath("/");
 
     return {
       success: true,

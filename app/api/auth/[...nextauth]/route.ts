@@ -62,13 +62,28 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       // セッションにLINEユーザー情報を追加
+      let isFriendAdded = token.isFriendAdded;
+
+      // 毎回データベースから最新の友達追加状況を取得
+      if (token.lineUserId) {
+        try {
+          const user = await prisma.user.findUnique({
+            where: { id: token.lineUserId as string },
+            select: { isFriendAdded: true },
+          });
+          isFriendAdded = user?.isFriendAdded || false;
+        } catch (error) {
+          console.error("Error fetching friend status in session:", error);
+        }
+      }
+
       return {
         ...session,
         user: {
           ...session.user,
           lineUserId: token.lineUserId,
           lineUserName: token.lineUserName,
-          isFriendAdded: token.isFriendAdded,
+          isFriendAdded: isFriendAdded,
         },
       };
     },

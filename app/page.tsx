@@ -34,13 +34,11 @@ export default function Home() {
   };
 
   const handleAddFriend = async () => {
-    window.open("https://line.me/R/ti/p/@511pngni", "_blank");
     try {
       const result = await markFriendAdded();
       if (result.success) {
-        // セッションを更新してユーザー情報を再取得
         await updateSession();
-        router.refresh();
+        window.open("https://line.me/R/ti/p/@511pngni", "_blank");
       } else {
         console.error("友達追加状態の更新に失敗しました:", result.error);
       }
@@ -48,7 +46,6 @@ export default function Home() {
       console.error("友達追加状態の更新に失敗しました:", error);
     }
   };
-
   return (
     <>
       <OnboardingModal isOpen={isOpen} onClose={closeOnboarding} />
@@ -119,9 +116,9 @@ export default function Home() {
               ></span>
               <span className="relative z-10">参加したイベント一覧</span>
             </Button>
-            {user && user.isFriendAdded === false && (
+            {user && user.isFriendAdded === false ? (
               <FriendAddAlert onAddFriend={handleAddFriend} />
-            )}
+            ) : null}
           </div>
         </div>
       </div>

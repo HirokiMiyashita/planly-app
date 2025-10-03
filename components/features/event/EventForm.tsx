@@ -74,13 +74,13 @@ export default function EventForm() {
   };
 
   const updateCandidateTime = (
-    date: string,
+    id: number,
     field: "startTime" | "endTime",
     value: string,
   ) => {
     setCandidateDates(
       candidateDates.map((candidate) =>
-        candidate.date === date ? { ...candidate, [field]: value } : candidate,
+        candidate.id === id ? { ...candidate, [field]: value } : candidate,
       ),
     );
   };
@@ -91,6 +91,22 @@ export default function EventForm() {
     setMessage(null);
 
     try {
+      // 時間の妥当性チェック
+      const invalidTimes = candidateDates.filter((candidate) => {
+        const startTime = new Date(`2000-01-01T${candidate.startTime}:00`);
+        const endTime = new Date(`2000-01-01T${candidate.endTime}:00`);
+        return startTime >= endTime;
+      });
+
+      if (invalidTimes.length > 0) {
+        setMessage({
+          type: "error",
+          text: "開始時刻が終了時刻より前になるように設定してください。",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       // 重複チェック
       const duplicates = candidateDates.filter((candidate, index) => {
         return candidateDates.some(

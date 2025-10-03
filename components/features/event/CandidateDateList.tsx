@@ -10,7 +10,7 @@ interface CandidateDateListProps {
   candidateDates: CandidateDate[];
   onRemoveDate: (id: number) => void;
   onUpdateTime: (
-    date: string,
+    id: number,
     field: "startTime" | "endTime",
     value: string,
   ) => void;
@@ -71,7 +71,7 @@ export default function CandidateDateList({
                   type="time"
                   value={candidate.startTime}
                   onChange={(e) =>
-                    onUpdateTime(candidate.date, "startTime", e.target.value)
+                    onUpdateTime(candidate.id || 0, "startTime", e.target.value)
                   }
                   className="text-xs"
                   disabled={disabled}
@@ -83,7 +83,7 @@ export default function CandidateDateList({
                   type="time"
                   value={candidate.endTime}
                   onChange={(e) =>
-                    onUpdateTime(candidate.date, "endTime", e.target.value)
+                    onUpdateTime(candidate.id || 0, "endTime", e.target.value)
                   }
                   className="text-xs"
                   disabled={disabled}

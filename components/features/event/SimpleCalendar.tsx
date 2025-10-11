@@ -15,9 +15,16 @@ export default function SimpleCalendar({
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const today = new Date();
+  // 日本時間（JST）に調整（UTC+9時間）
+  const now = new Date();
+  const today = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
+
+  // デバッグ用ログ
+  console.log("UTC now:", now.toLocaleDateString("ja-JP"));
+  console.log("JST today:", today.toLocaleDateString("ja-JP"));
+  console.log("JST today getDate():", today.getDate());
 
   // 月の最初の日と最後の日を取得
   const firstDay = new Date(year, month, 1);
@@ -27,20 +34,30 @@ export default function SimpleCalendar({
 
   // カレンダーの日付配列を生成
   const calendarDays = [];
-  
+
   // 前月の日付（空白部分）
   for (let i = 0; i < firstDayOfWeek; i++) {
     calendarDays.push(null);
   }
-  
+
   // 今月の日付
   for (let day = 1; day <= daysInMonth; day++) {
     calendarDays.push(new Date(year, month, day));
   }
 
   const monthNames = [
-    "1月", "2月", "3月", "4月", "5月", "6月",
-    "7月", "8月", "9月", "10月", "11月", "12月"
+    "1月",
+    "2月",
+    "3月",
+    "4月",
+    "5月",
+    "6月",
+    "7月",
+    "8月",
+    "9月",
+    "10月",
+    "11月",
+    "12月",
   ];
 
   const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
@@ -55,11 +72,18 @@ export default function SimpleCalendar({
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
-    onDateSelect(date.toISOString().split("T")[0]);
+    // 日本時間（JST）で日付を取得
+    const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+    onDateSelect(jstDate.toISOString().split("T")[0]);
   };
 
   const isToday = (date: Date) => {
-    return date.toDateString() === today.toDateString();
+    // 日付のみを比較（時刻を無視）
+    return (
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate()
+    );
   };
 
   const isSelected = (date: Date) => {
@@ -67,7 +91,18 @@ export default function SimpleCalendar({
   };
 
   const isPast = (date: Date) => {
-    return date < today;
+    // 日付のみを比較（時刻を無視）
+    const todayDateOnly = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    );
+    const dateOnly = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    );
+    return dateOnly < todayDateOnly;
   };
 
   return (
@@ -111,9 +146,9 @@ export default function SimpleCalendar({
 
       {/* カレンダーグリッド */}
       <div className="grid grid-cols-7 gap-1">
-        {calendarDays.map((date, index) => {
+        {calendarDays.map((date, _index) => {
           if (!date) {
-            return <div key={index} className="h-10" />;
+            return <div key={date} className="h-10" />;
           }
 
           const isTodayDate = isToday(date);
@@ -122,18 +157,20 @@ export default function SimpleCalendar({
 
           return (
             <button
-              key={index}
+              type="button"
+              key={date.toISOString()}
               onClick={() => handleDateClick(date)}
               disabled={disabled || isPastDate}
               className={`
                 h-10 text-sm rounded-md transition-colors
-                ${isPastDate
-                  ? "text-gray-300 cursor-not-allowed"
-                  : isSelectedDate
-                  ? "bg-blue-600 text-white"
-                  : isTodayDate
-                  ? "bg-blue-100 text-blue-600 font-semibold"
-                  : "text-gray-700 hover:bg-gray-100"
+                ${
+                  isPastDate
+                    ? "text-gray-300 cursor-not-allowed"
+                    : isSelectedDate
+                      ? "bg-blue-600 text-white"
+                      : isTodayDate
+                        ? "bg-blue-100 text-blue-600 font-semibold"
+                        : "text-gray-700 hover:bg-gray-100"
                 }
               `}
             >
@@ -147,11 +184,12 @@ export default function SimpleCalendar({
       {selectedDate && (
         <div className="mt-4 p-3 bg-blue-50 rounded-lg">
           <p className="text-sm text-blue-800">
-            選択された日付: {selectedDate.toLocaleDateString('ja-JP', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              weekday: 'long'
+            選択された日付:{" "}
+            {selectedDate.toLocaleDateString("ja-JP", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              weekday: "long",
             })}
           </p>
         </div>

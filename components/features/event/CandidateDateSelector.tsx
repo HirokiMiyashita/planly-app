@@ -19,20 +19,26 @@ export default function CandidateDateSelector({
   const [showTimeSelector, setShowTimeSelector] = useState(false);
 
   const getToday = () => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
+    // 日本時間（JST）に調整
+    const now = new Date();
+    const jstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    return jstDate.toISOString().split("T")[0];
   };
 
   const getTomorrow = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split("T")[0];
+    // 日本時間（JST）に調整
+    const now = new Date();
+    const jstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    jstDate.setDate(jstDate.getDate() + 1);
+    return jstDate.toISOString().split("T")[0];
   };
 
   const getNextWeek = () => {
-    const nextWeek = new Date();
-    nextWeek.setDate(nextWeek.getDate() + 7);
-    return nextWeek.toISOString().split("T")[0];
+    // 日本時間（JST）に調整
+    const now = new Date();
+    const jstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    jstDate.setDate(jstDate.getDate() + 7);
+    return jstDate.toISOString().split("T")[0];
   };
 
   const handleDateSelect = (date: string) => {
@@ -116,12 +122,9 @@ export default function CandidateDateSelector({
         >
           {showCalendar ? "カレンダーを閉じる" : "カレンダーから選択"}
         </Button>
-        
+
         {showCalendar && (
-          <SimpleCalendar
-            onDateSelect={handleDateSelect}
-            disabled={disabled}
-          />
+          <SimpleCalendar onDateSelect={handleDateSelect} disabled={disabled} />
         )}
       </div>
 

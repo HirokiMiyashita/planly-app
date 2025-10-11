@@ -48,7 +48,10 @@ export async function deleteEvent(eventId: string) {
 
     // 作成者かどうかチェック
     if (event.createdBy !== lineUserId) {
-      return { success: false, message: "このイベントを削除する権限がありません" };
+      return {
+        success: false,
+        message: "このイベントを削除する権限がありません",
+      };
     }
 
     // イベントと関連するスロット、参加状況を削除

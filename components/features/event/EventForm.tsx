@@ -28,7 +28,11 @@ export default function EventForm() {
   const stepTitles = ["基本情報", "候補日時", "確認・登録"];
   const totalSteps = stepTitles.length;
 
-  const addCandidateDate = (date: string, startTime?: string, endTime?: string) => {
+  const addCandidateDate = (
+    date: string,
+    startTime?: string,
+    endTime?: string,
+  ) => {
     if (date) {
       setCandidateDates([
         ...candidateDates,
@@ -226,9 +230,7 @@ export default function EventForm() {
         />
 
         {/* 現在のステップのコンテンツ */}
-        <div className="min-h-[300px]">
-          {renderCurrentStep()}
-        </div>
+        <div className="min-h-[300px]">{renderCurrentStep()}</div>
 
         {/* ナビゲーションボタン */}
         {currentStep < 3 && (

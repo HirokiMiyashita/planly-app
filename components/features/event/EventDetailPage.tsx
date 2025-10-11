@@ -16,7 +16,10 @@ interface EventDetailPageProps {
   isCreator?: boolean;
 }
 
-export default function EventDetailPage({ event, isCreator = false }: EventDetailPageProps) {
+export default function EventDetailPage({
+  event,
+  isCreator = false,
+}: EventDetailPageProps) {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -47,7 +50,7 @@ export default function EventDetailPage({ event, isCreator = false }: EventDetai
     setIsDeleting(true);
     try {
       const result = await deleteEvent(event.id.toString());
-      
+
       if (result.success) {
         toast.success("イベントを削除しました", {
           className: "bg-green-500 text-white",
@@ -71,11 +74,11 @@ export default function EventDetailPage({ event, isCreator = false }: EventDetai
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long'
+    return date.toLocaleDateString("ja-JP", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "long",
     });
   };
 
@@ -140,7 +143,9 @@ export default function EventDetailPage({ event, isCreator = false }: EventDetai
           {event.description && (
             <div className="mb-4">
               <h4 className="font-medium text-gray-700 mb-2">説明</h4>
-              <p className="text-gray-600 whitespace-pre-wrap">{event.description}</p>
+              <p className="text-gray-600 whitespace-pre-wrap">
+                {event.description}
+              </p>
             </div>
           )}
           <div className="text-sm text-gray-500">
@@ -179,9 +184,12 @@ export default function EventDetailPage({ event, isCreator = false }: EventDetai
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4 text-red-600">イベントを削除</h3>
+            <h3 className="text-lg font-semibold mb-4 text-red-600">
+              イベントを削除
+            </h3>
             <p className="text-gray-700 mb-6">
-              「{event.title}」を削除しますか？<br />
+              「{event.title}」を削除しますか？
+              <br />
               この操作は取り消すことができません。
             </p>
             <div className="flex gap-2">

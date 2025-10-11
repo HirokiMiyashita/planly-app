@@ -23,11 +23,11 @@ export default function TimeSelector({
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long'
+    return date.toLocaleDateString("ja-JP", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "long",
     });
   };
 
@@ -40,18 +40,11 @@ export default function TimeSelector({
     onConfirm(startTime, endTime);
   };
 
-  const presetTimes = [
-    { label: "午前 (9:00-12:00)", start: "09:00", end: "12:00" },
-    { label: "午後 (13:00-17:00)", start: "13:00", end: "17:00" },
-    { label: "夕方 (17:00-20:00)", start: "17:00", end: "20:00" },
-    { label: "夜 (19:00-22:00)", start: "19:00", end: "22:00" },
-  ];
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <h3 className="text-lg font-semibold mb-4">時間を設定</h3>
-        
+
         <div className="space-y-4">
           {/* 選択された日付の表示 */}
           <div className="p-3 bg-blue-50 rounded-lg">
@@ -64,7 +57,10 @@ export default function TimeSelector({
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="startTime" className="text-xs text-gray-600 mb-2">
+                <Label
+                  htmlFor="startTime"
+                  className="text-xs text-gray-600 mb-2"
+                >
                   開始時刻
                 </Label>
                 <Input

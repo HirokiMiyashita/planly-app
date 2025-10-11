@@ -20,15 +20,15 @@ export default function EventCard({ event, isCreator }: EventCardProps) {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ja-JP', {
-      month: 'short',
-      day: 'numeric',
-      weekday: 'short'
+    return date.toLocaleDateString("ja-JP", {
+      month: "short",
+      day: "numeric",
+      weekday: "short",
     });
   };
 
   return (
-    <Card 
+    <Card
       className="shadow-sm cursor-pointer hover:shadow-md transition-shadow"
       onClick={handleCardClick}
     >
@@ -48,7 +48,7 @@ export default function EventCard({ event, isCreator }: EventCardProps) {
             </Badge>
           )}
         </div>
-        
+
         <div className="flex items-center justify-between text-sm text-gray-500">
           <div className="flex items-center gap-4">
             <span>{event.slots.length}件の候補日時</span>
@@ -58,9 +58,7 @@ export default function EventCard({ event, isCreator }: EventCardProps) {
               </Badge>
             )}
           </div>
-          <span className="text-xs">
-            {formatDate(event.created_at)}
-          </span>
+          <span className="text-xs">{formatDate(event.created_at)}</span>
         </div>
       </CardContent>
     </Card>

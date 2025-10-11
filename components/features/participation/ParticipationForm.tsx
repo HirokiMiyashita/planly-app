@@ -28,7 +28,7 @@ export default function ParticipationForm({
 }: ParticipationFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // 各スロットの参加状況を管理（既存の参加状況を初期値として設定）
   const [participations, setParticipations] = useState<
     Record<number, LocalParticipationStatus>
@@ -164,131 +164,135 @@ export default function ParticipationForm({
     <>
       <LoadingOverlay isLoading={isSubmitting} message="参加状況を保存中..." />
       <div className="space-y-4">
-      {/* 参加登録状況 */}
-      <div
-        className={`p-3 rounded-lg ${
-          isUserRegistered
-            ? "bg-green-50 border border-green-200"
-            : "bg-yellow-50 border border-yellow-200"
-        }`}
-      >
-        <div className="flex items-center gap-2">
-          {isUserRegistered ? (
-            <>
-              <span className="text-green-600">✓</span>
-              <p className="text-sm text-green-800 font-medium">参加登録済み</p>
-            </>
-          ) : (
-            <>
-              <span className="text-yellow-600">×</span>
-              <p className="text-sm text-yellow-800 font-medium">
-                まだ参加登録していません
-              </p>
-            </>
-          )}
-        </div>
-      </div>
-      {slots.map((slot) => {
-        const isAnswered = isAlreadyAnswered(slot.id);
-        return (
-          <div
-            key={slot.id}
-            className={`p-4 rounded-lg space-y-3 ${
-              isAnswered ? "bg-green-50 border border-green-200" : "bg-gray-50"
-            }`}
-          >
-            {/* 日時情報と回答状況 */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div>
-                  <p className="font-medium">
-                    {new Date(slot.day).toLocaleDateString("ja-JP", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                      weekday: "long",
-                    })}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {slot.start_at} - {slot.end_at}
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                <div className="flex gap-2">
-                  {(["○", "△", "×"] as const).map((status) => (
-                    <Button
-                      key={status}
-                      size="sm"
-                      variant={
-                        participations[slot.id] === status
-                          ? "default"
-                          : "outline"
-                      }
-                      className={`w-10 h-10 p-0 text-lg font-bold ${
-                        participations[slot.id] === status
-                          ? getStatusStyle(status)
-                          : "border-gray-300 hover:bg-gray-50"
-                      }`}
-                      onClick={() => updateParticipation(slot.id, status)}
-                      disabled={isSubmitting}
-                    >
-                      {status}
-                    </Button>
-                  ))}
-                </div>
-                {getError(`slot_${slot.id}`) && (
-                  <p className="text-xs text-red-500">
-                    {getError(`slot_${slot.id}`)}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* 参加状況表示 */}
-            {slot.participations.length > 0 && (
-              <div className="border-t pt-3">
-                <p className="text-sm font-medium text-gray-700 mb-2">
-                  回答状況:
+        {/* 参加登録状況 */}
+        <div
+          className={`p-3 rounded-lg ${
+            isUserRegistered
+              ? "bg-green-50 border border-green-200"
+              : "bg-yellow-50 border border-yellow-200"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {isUserRegistered ? (
+              <>
+                <span className="text-green-600">✓</span>
+                <p className="text-sm text-green-800 font-medium">
+                  参加登録済み
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  {slot.participations.map((participation) => (
-                    <span
-                      key={participation.id}
-                      className={`text-xs px-2 py-1 rounded ${
-                        participation.status === "○"
-                          ? "bg-green-100 text-green-800"
-                          : participation.status === "△"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {participation.userName || "不明"} {participation.status}
-                    </span>
-                  ))}
-                </div>
-              </div>
+              </>
+            ) : (
+              <>
+                <span className="text-yellow-600">×</span>
+                <p className="text-sm text-yellow-800 font-medium">
+                  まだ参加登録していません
+                </p>
+              </>
             )}
           </div>
-        );
-      })}
+        </div>
+        {slots.map((slot) => {
+          const isAnswered = isAlreadyAnswered(slot.id);
+          return (
+            <div
+              key={slot.id}
+              className={`p-4 rounded-lg space-y-3 ${
+                isAnswered
+                  ? "bg-green-50 border border-green-200"
+                  : "bg-gray-50"
+              }`}
+            >
+              {/* 日時情報と回答状況 */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div>
+                    <p className="font-medium">
+                      {new Date(slot.day).toLocaleDateString("ja-JP", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        weekday: "long",
+                      })}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {slot.start_at} - {slot.end_at}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <div className="flex gap-2">
+                    {(["○", "△", "×"] as const).map((status) => (
+                      <Button
+                        key={status}
+                        size="sm"
+                        variant={
+                          participations[slot.id] === status
+                            ? "default"
+                            : "outline"
+                        }
+                        className={`w-10 h-10 p-0 text-lg font-bold ${
+                          participations[slot.id] === status
+                            ? getStatusStyle(status)
+                            : "border-gray-300 hover:bg-gray-50"
+                        }`}
+                        onClick={() => updateParticipation(slot.id, status)}
+                        disabled={isSubmitting}
+                      >
+                        {status}
+                      </Button>
+                    ))}
+                  </div>
+                  {getError(`slot_${slot.id}`) && (
+                    <p className="text-xs text-red-500">
+                      {getError(`slot_${slot.id}`)}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-      <Button
-        onClick={handleParticipation}
-        disabled={isSubmitting}
-        className={`w-full ${
-          answeredSlotsCount === slots.length
-            ? "bg-blue-500 hover:bg-blue-600"
-            : "bg-green-500 hover:bg-green-600"
-        } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
-      >
-        {isSubmitting 
-          ? "保存中..." 
-          : answeredSlotsCount === slots.length 
-            ? "回答を更新" 
-            : "参加状況を保存"
-        }
-      </Button>
+              {/* 参加状況表示 */}
+              {slot.participations.length > 0 && (
+                <div className="border-t pt-3">
+                  <p className="text-sm font-medium text-gray-700 mb-2">
+                    回答状況:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {slot.participations.map((participation) => (
+                      <span
+                        key={participation.id}
+                        className={`text-xs px-2 py-1 rounded ${
+                          participation.status === "○"
+                            ? "bg-green-100 text-green-800"
+                            : participation.status === "△"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {participation.userName || "不明"}{" "}
+                        {participation.status}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        <Button
+          onClick={handleParticipation}
+          disabled={isSubmitting}
+          className={`w-full ${
+            answeredSlotsCount === slots.length
+              ? "bg-blue-500 hover:bg-blue-600"
+              : "bg-green-500 hover:bg-green-600"
+          } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+        >
+          {isSubmitting
+            ? "保存中..."
+            : answeredSlotsCount === slots.length
+              ? "回答を更新"
+              : "参加状況を保存"}
+        </Button>
       </div>
     </>
   );

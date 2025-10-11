@@ -18,7 +18,6 @@ export default function StepProgressIndicator({
           const stepNumber = index + 1;
           const isCompleted = stepNumber < currentStep;
           const isCurrent = stepNumber === currentStep;
-          const isUpcoming = stepNumber > currentStep;
 
           return (
             <div key={stepNumber} className="flex items-center">
@@ -29,8 +28,8 @@ export default function StepProgressIndicator({
                     isCompleted
                       ? "bg-blue-600 text-white"
                       : isCurrent
-                      ? "bg-blue-100 text-blue-600 border-2 border-blue-600"
-                      : "bg-gray-200 text-gray-500"
+                        ? "bg-blue-100 text-blue-600 border-2 border-blue-600"
+                        : "bg-gray-200 text-gray-500"
                   }`}
                 >
                   {isCompleted ? (
@@ -38,7 +37,10 @@ export default function StepProgressIndicator({
                       className="w-4 h-4"
                       fill="currentColor"
                       viewBox="0 0 20 20"
+                      role="img"
+                      aria-label="完了"
                     >
+                      <title>完了</title>
                       <path
                         fillRule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -64,7 +66,7 @@ export default function StepProgressIndicator({
                   className={`w-16 h-0.5 mx-2 ${
                     isCompleted ? "bg-blue-600" : "bg-gray-200"
                   }`}
-                  style={{ marginTop: '-16px' }}
+                  style={{ marginTop: "-16px" }}
                 />
               )}
             </div>

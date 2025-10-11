@@ -1,9 +1,9 @@
+import { getServerSession } from "next-auth";
 import { Suspense } from "react";
 import { getEventById } from "@/app/actions/event/getEventById";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import Header from "@/components/features/auth/Header";
 import EventDetailPage from "@/components/features/event/EventDetailPage";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 interface EventDetailPageProps {
   params: {

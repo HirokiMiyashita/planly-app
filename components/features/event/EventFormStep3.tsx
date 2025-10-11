@@ -24,11 +24,11 @@ export default function EventFormStep3({
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long'
+    return date.toLocaleDateString("ja-JP", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "long",
     });
   };
 
@@ -42,13 +42,17 @@ export default function EventFormStep3({
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <h4 className="font-medium text-sm text-gray-700 mb-1">イベント名</h4>
+              <h4 className="font-medium text-sm text-gray-700 mb-1">
+                イベント名
+              </h4>
               <p className="text-base">{eventName}</p>
             </div>
             {description && (
               <div>
                 <h4 className="font-medium text-sm text-gray-700 mb-1">説明</h4>
-                <p className="text-base text-gray-600 whitespace-pre-wrap">{description}</p>
+                <p className="text-base text-gray-600 whitespace-pre-wrap">
+                  {description}
+                </p>
               </div>
             )}
           </CardContent>
@@ -75,9 +79,7 @@ export default function EventFormStep3({
                         {candidate.startTime} - {candidate.endTime}
                       </p>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {index + 1}
-                    </div>
+                    <div className="text-sm text-gray-500">{index + 1}</div>
                   </div>
                 ))}
                 <p className="text-xs text-gray-500 mt-2">

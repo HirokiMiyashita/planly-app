@@ -23,15 +23,3 @@ export const config = {
   isProduction: process.env.NODE_ENV === "production",
   isVercel: process.env.VERCEL === "1",
 };
-
-// ログ出力（開発時のみ）
-if (config.isDevelopment) {
-  console.log("🔧 Environment Configuration:");
-  console.log(
-    `  - Database: ${config.database.isLocal ? "Local" : "Production"}`,
-  );
-  console.log(
-    `  - Environment: ${config.isProduction ? "Production" : "Development"}`,
-  );
-  console.log(`  - Platform: ${config.isVercel ? "Vercel" : "Local"}`);
-}

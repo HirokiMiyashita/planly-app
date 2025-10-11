@@ -5,6 +5,7 @@ export interface Participation {
   userId: string;
   userName: string | null;
   status: string;
+  comment: string | null;
   createdAt: string;
   updatedAt: string;
 }

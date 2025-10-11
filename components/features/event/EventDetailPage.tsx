@@ -24,7 +24,6 @@ export default function EventDetailPage({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
-
   const handleInvite = async () => {
     try {
       const inviteUrl = `${window.location.origin}/participation/${event.id}`;

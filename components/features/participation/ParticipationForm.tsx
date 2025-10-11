@@ -9,6 +9,7 @@ import {
 } from "@/app/actions/event/participationEvent";
 import { Button } from "@/components/ui/button";
 import LoadingOverlay from "@/components/ui/loading-overlay";
+import { Textarea } from "@/components/ui/textarea";
 import type { Participation, Slot } from "@/types/event";
 
 type LocalParticipationStatus = "○" | "△" | "×" | null;
@@ -47,6 +48,25 @@ export default function ParticipationForm({
     return initialParticipations;
   });
 
+  // 各スロットのコメントを管理
+  const [comments, setComments] = useState<Record<number, string>>(() => {
+    const initialComments: Record<number, string> = {};
+    currentUserParticipation.forEach((participation) => {
+      const slot = slots.find((s) =>
+        s.participations.some((p) => p.id === participation.id),
+      );
+      if (slot && participation.comment) {
+        initialComments[slot.id] = participation.comment;
+      }
+    });
+    return initialComments;
+  });
+
+  // 各スロットのコメント表示状態を管理
+  const [showCommentInput, setShowCommentInput] = useState<
+    Record<number, boolean>
+  >({});
+
   // バリデーション状態（useValidationStoreの代替）
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -84,6 +104,22 @@ export default function ParticipationForm({
     }
   };
 
+  // コメントを更新する関数
+  const updateComment = (slotId: number, comment: string) => {
+    setComments((prev) => ({
+      ...prev,
+      [slotId]: comment,
+    }));
+  };
+
+  // コメント入力の表示/非表示を切り替える関数
+  const toggleCommentInput = (slotId: number) => {
+    setShowCommentInput((prev) => ({
+      ...prev,
+      [slotId]: !prev[slotId],
+    }));
+  };
+
   // バリデーション関数
   const validateParticipations = () => {
     clearAllErrors();
@@ -116,6 +152,7 @@ export default function ParticipationForm({
         .map(([slotId, status]) => ({
           slotId: parseInt(slotId, 10),
           status: status as ParticipationStatus,
+          comment: comments[parseInt(slotId, 10)] || "",
         }));
 
       const result = await participationEvent(eventId, participationData);
@@ -249,6 +286,38 @@ export default function ParticipationForm({
                 </div>
               </div>
 
+              {/* コメント追加ボタン */}
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => toggleCommentInput(slot.id)}
+                  disabled={isSubmitting}
+                  className="text-xs"
+                >
+                  {showCommentInput[slot.id]
+                    ? "コメントを閉じる"
+                    : "コメントを追加"}
+                </Button>
+              </div>
+
+              {/* コメント入力エリア */}
+              {showCommentInput[slot.id] && (
+                <div className="border-t pt-3">
+                  <p className="text-sm font-medium text-gray-700 mb-2">
+                    コメント:
+                  </p>
+                  <Textarea
+                    placeholder="コメントを入力してください（任意）"
+                    value={comments[slot.id] || ""}
+                    onChange={(e) => updateComment(slot.id, e.target.value)}
+                    disabled={isSubmitting}
+                    className="min-h-[80px] text-sm"
+                  />
+                </div>
+              )}
+
               {/* 参加状況表示 */}
               {slot.participations.length > 0 && (
                 <div className="border-t pt-3">
@@ -257,19 +326,23 @@ export default function ParticipationForm({
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {slot.participations.map((participation) => (
-                      <span
+                      <div
                         key={participation.id}
-                        className={`text-xs px-2 py-1 rounded ${
-                          participation.status === "○"
-                            ? "bg-green-100 text-green-800"
-                            : participation.status === "△"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
-                        }`}
+                        className="flex flex-col gap-1"
                       >
-                        {participation.userName || "不明"}{" "}
-                        {participation.status}
-                      </span>
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${
+                            participation.status === "○"
+                              ? "bg-green-100 text-green-800"
+                              : participation.status === "△"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {participation.userName || "不明"}{" "}
+                          {participation.status}
+                        </span>
+                      </div>
                     ))}
                   </div>
                 </div>

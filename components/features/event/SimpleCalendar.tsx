@@ -21,11 +21,6 @@ export default function SimpleCalendar({
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  // デバッグ用ログ
-  console.log("UTC now:", now.toLocaleDateString("ja-JP"));
-  console.log("JST today:", today.toLocaleDateString("ja-JP"));
-  console.log("JST today getDate():", today.getDate());
-
   // 月の最初の日と最後の日を取得
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);

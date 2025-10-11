@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { Suspense } from "react";
 import { getEventById } from "@/app/actions/event/getEventById";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import Auth from "@/components/features/auth/Auth";
 import Header from "@/components/features/auth/Header";
 import EventDetailPage from "@/components/features/event/EventDetailPage";
 
@@ -46,11 +47,11 @@ async function EventDetail({ params }: EventDetailPageProps) {
 
 export default function EventDetailPageRoute({ params }: EventDetailPageProps) {
   return (
-    <>
+    <Auth>
       <Header title="イベント詳細" />
       <Suspense fallback={<LoadingSkeleton />}>
         <EventDetail params={params} />
       </Suspense>
-    </>
+    </Auth>
   );
 }

@@ -51,8 +51,6 @@ export async function createEvent(formData: FormData) {
             Buffer.from(token.split(".")[1], "base64").toString(),
           );
           lineUserId = payload?.lineUserId;
-          console.log("JWT payload:", payload);
-          console.log("lineUserId from JWT:", lineUserId);
         }
       } catch (error) {
         console.error("JWT decode error:", error);

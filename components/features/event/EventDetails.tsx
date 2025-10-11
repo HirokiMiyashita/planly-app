@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 import { confirmed } from "@/app/actions/event/confirmed";
 import { Button } from "@/components/ui/button";
-import type { Event, Participation } from "@/types/event";
+import type { Event, Participation, Slot } from "@/types/event";
 
 interface EventDetailsProps {
   event: Event;
@@ -13,6 +14,8 @@ interface EventDetailsProps {
 
 export default function EventDetails({ event, isCreator }: EventDetailsProps) {
   const router = useRouter();
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
 
   // 参加状況の集計関数
   const getParticipationSummary = (participations: Participation[] | null) => {
@@ -53,6 +56,16 @@ export default function EventDetails({ event, isCreator }: EventDetailsProps) {
         className: "bg-red-500 text-white",
       });
     }
+  };
+
+  const handleShowComments = (slot: Slot) => {
+    setSelectedSlot(slot);
+    setShowCommentModal(true);
+  };
+
+  const handleCloseCommentModal = () => {
+    setShowCommentModal(false);
+    setSelectedSlot(null);
   };
 
   return (
@@ -124,7 +137,19 @@ export default function EventDetails({ event, isCreator }: EventDetailsProps) {
             {/* 参加者リスト */}
             {slot.participations.length > 0 && (
               <div className="mt-2 pt-2 border-t border-gray-200">
-                <p className="text-xs text-gray-500 mb-1">参加者:</p>
+                <div className="flex justify-between items-center mb-1">
+                  <p className="text-xs text-gray-500">参加者:</p>
+                  {slot.participations.some((p) => p.comment) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs h-6 px-2"
+                      onClick={() => handleShowComments(slot)}
+                    >
+                      コメント表示
+                    </Button>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-1">
                   {slot.participations.map((participation) => (
                     <span
@@ -146,6 +171,69 @@ export default function EventDetails({ event, isCreator }: EventDetailsProps) {
           </div>
         );
       })}
+
+      {/* コメント表示モーダル */}
+      {showCommentModal && selectedSlot && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">コメント一覧</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCloseCommentModal}
+              >
+                ✕
+              </Button>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-sm text-gray-600">
+                {new Date(selectedSlot.day).toLocaleDateString("ja-JP", {
+                  month: "short",
+                  day: "numeric",
+                  weekday: "short",
+                })}{" "}
+                {selectedSlot.start_at} - {selectedSlot.end_at}
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {selectedSlot.participations
+                .filter((p: Participation) => p.comment)
+                .map((participation: Participation) => (
+                  <div key={participation.id} className="border rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span
+                        className={`text-xs px-2 py-1 rounded ${
+                          participation.status === "○"
+                            ? "bg-green-100 text-green-800"
+                            : participation.status === "△"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {participation.userName || "不明"}{" "}
+                        {participation.status}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded">
+                      {participation.comment}
+                    </p>
+                  </div>
+                ))}
+
+              {selectedSlot.participations.filter(
+                (p: Participation) => p.comment,
+              ).length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  コメントはありません
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

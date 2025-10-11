@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import BottomBar from "@/components/features/BottomBar";
 import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "./providers";
 
@@ -45,6 +46,7 @@ export default function RootLayout({
           <div className="min-h-screen flex items-center justify-center">
             <div className="w-full max-w-md mx-auto bg-white min-h-screen shadow-xl rounded-lg overflow-hidden">
               {children}
+              <BottomBar />
             </div>
           </div>
         </Providers>

@@ -69,6 +69,7 @@ model EventParticipation {
   eventId Int    @map("event_id")
   slotId  Int    @map("slot_id")
   userId  String @map("user_id")
+  comment String 
   status  String // '○', '△', '×'
   createdAt DateTime @default(now()) @map("created_at")
 

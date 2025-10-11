@@ -1,7 +1,8 @@
 import { Suspense } from "react";
+import Auth from "@/components/features/auth/Auth";
 import Header from "@/components/features/auth/Header";
 import EventCard from "@/components/features/event/EventCard";
-import { getMyEvent } from "../../actions/event/getMyEvent";
+import { getMyEvent } from "../actions/event/getMyEvent";
 
 function LoadingSkeleton() {
   return (
@@ -49,11 +50,11 @@ async function EventList() {
 
 export default function MyEventsPage() {
   return (
-    <>
+    <Auth>
       <Header title="作成したイベント" />
       <Suspense fallback={<LoadingSkeleton />}>
         <EventList />
       </Suspense>
-    </>
+    </Auth>
   );
 }

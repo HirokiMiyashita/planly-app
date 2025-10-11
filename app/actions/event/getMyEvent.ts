@@ -10,6 +10,7 @@ export interface Participation {
   userId: string;
   userName: string | null;
   status: string;
+  comment: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -64,6 +65,7 @@ export async function getMyEvent(): Promise<Event[]> {
               id: true,
               userId: true,
               status: true,
+              comment: true,
               createdAt: true,
               updatedAt: true,
               user: {
@@ -99,6 +101,7 @@ export async function getMyEvent(): Promise<Event[]> {
         id: participation.id,
         userId: participation.userId,
         userName: participation.user.name,
+        comment: participation.comment,
         status: participation.status,
         createdAt: participation.createdAt.toISOString(),
         updatedAt: participation.updatedAt.toISOString(),

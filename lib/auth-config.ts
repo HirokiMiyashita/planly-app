@@ -12,14 +12,3 @@ export const authConfig = {
   // トンネルURL（ローカル開発時）
   tunnelUrl: process.env.TUNNEL_URL,
 };
-
-// ログ出力（開発時のみ）
-if (process.env.NODE_ENV === "development") {
-  console.log("🔐 LINE認証設定:");
-  console.log(`  - Base URL: ${authConfig.baseUrl}`);
-  console.log(`  - Callback URL: ${authConfig.callbackUrl}`);
-  console.log(`  - Redirect URL: ${authConfig.redirectUrl}`);
-  if (authConfig.tunnelUrl) {
-    console.log(`  - Tunnel URL: ${authConfig.tunnelUrl}`);
-  }
-}

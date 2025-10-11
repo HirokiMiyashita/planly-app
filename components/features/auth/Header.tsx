@@ -1,7 +1,6 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import OnboardingModal from "./OnboardingModal";
@@ -12,11 +11,7 @@ interface HeaderProps {
 
 export default function Header({ title }: HeaderProps) {
   const { user, isLoading } = useAuth();
-  const { openUsageGuide, isOpen, closeOnboarding } = useOnboarding();
-
-  const handleUsageClick = () => {
-    openUsageGuide();
-  };
+  const { isOpen, closeOnboarding } = useOnboarding();
 
   if (isLoading) {
     return (
@@ -36,14 +31,6 @@ export default function Header({ title }: HeaderProps) {
         <div className="flex items-center justify-between">
           <p className="text-lg font-bold">{title}</p>
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleUsageClick}
-              className="text-xs"
-            >
-              💡 使い方
-            </Button>
             <Avatar className="h-8 w-8">
               <AvatarImage
                 src={user?.image}

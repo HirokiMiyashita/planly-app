@@ -65,6 +65,7 @@ export async function getUpcomingEvents() {
         userId: participation.userId,
         userName: participation.user.name,
         status: participation.status,
+        comment: participation.comment,
         createdAt: participation.createdAt.toISOString(),
         updatedAt: participation.updatedAt.toISOString(),
       })),

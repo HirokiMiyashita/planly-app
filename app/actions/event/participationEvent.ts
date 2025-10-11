@@ -13,6 +13,7 @@ export enum ParticipationStatus {
 export interface ParticipationData {
   slotId: number;
   status: ParticipationStatus;
+  comment?: string;
 }
 
 export async function participationEvent(
@@ -57,6 +58,7 @@ export async function participationEvent(
         },
         update: {
           status: participation.status,
+          comment: participation.comment || "",
           updatedAt: new Date(),
         },
         create: {
@@ -64,6 +66,7 @@ export async function participationEvent(
           userId: lineUserId,
           slotId: participation.slotId,
           status: participation.status,
+          comment: participation.comment || "",
         },
       });
     }

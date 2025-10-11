@@ -84,17 +84,19 @@ export default function EventDetails({ event, isCreator }: EventDetailsProps) {
 
             <div className="flex justify-between items-center">
               <div className="flex gap-4 text-sm">
-                <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                  <span>○ {summary.yes}人</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
-                  <span>△ {summary.maybe}人</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 bg-red-500 rounded-full"></span>
-                  <span>× {summary.no}人</span>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                    <span>○ {summary.yes}人</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
+                    <span>△ {summary.maybe}人</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 bg-red-500 rounded-full"></span>
+                    <span>× {summary.no}人</span>
+                  </div>
                 </div>
               </div>
 

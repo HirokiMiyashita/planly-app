@@ -10,7 +10,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.LINE_CLIENT_SECRET_ID as string,
       authorization: {
         params: {
-          scope: "profile openid",
+          scope: "profile openid message",
         },
       },
     }),

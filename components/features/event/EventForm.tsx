@@ -4,20 +4,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createEvent } from "@/app/actions/event/createEvent";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import LoadingOverlay from "@/components/ui/loading-overlay";
-import { Textarea } from "@/components/ui/textarea";
-import { useRandomColors } from "@/hooks/useRandomColors";
 import type { CandidateDate } from "@/types/event";
-import CandidateDateList from "./CandidateDateList";
-import CandidateDateSelector from "./CandidateDateSelector";
+import EventFormStep1 from "./EventFormStep1";
+import EventFormStep2 from "./EventFormStep2";
+import EventFormStep3 from "./EventFormStep3";
+import StepProgressIndicator from "./StepProgressIndicator";
 
 export default function EventForm() {
-  const formRef = useRef<HTMLFormElement>(null);
-  const candidateListRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
-  const { getColor } = useRandomColors({ count: 2 });
+  const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -29,31 +25,22 @@ export default function EventForm() {
   const [description, setDescription] = useState("");
   const router = useRouter();
 
-  const addCandidateDate = (date: string) => {
+  const stepTitles = ["基本情報", "候補日時", "確認・登録"];
+  const totalSteps = stepTitles.length;
+
+  const addCandidateDate = (date: string, startTime?: string, endTime?: string) => {
     if (date) {
       setCandidateDates([
         ...candidateDates,
         {
           id: Date.now() + Math.random(), // 一意のIDを生成
           date: date,
-          startTime: "09:00",
-          endTime: "10:00",
+          startTime: startTime || "09:00",
+          endTime: endTime || "10:00",
         },
       ]);
     }
   };
-
-  // 候補日が追加された時にスクロール
-  useEffect(() => {
-    if (candidateDates.length > 0 && candidateListRef.current) {
-      setTimeout(() => {
-        candidateListRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-        });
-      }, 100); // 少し遅延を入れてDOMの更新を待つ
-    }
-  }, [candidateDates.length]);
 
   // エラーメッセージが表示された時に一番上までスクロール
   useEffect(() => {
@@ -66,6 +53,30 @@ export default function EventForm() {
       }, 100);
     }
   }, [message]);
+
+  // ステップナビゲーション関数
+  const goToNextStep = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const goToPreviousStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const canProceedToNext = () => {
+    switch (currentStep) {
+      case 1:
+        return eventName.trim() !== "";
+      case 2:
+        return candidateDates.length > 0;
+      default:
+        return true;
+    }
+  };
 
   const removeCandidateDate = (idToRemove: number) => {
     setCandidateDates(
@@ -85,8 +96,7 @@ export default function EventForm() {
     );
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setIsSubmitting(true);
     setMessage(null);
 
@@ -141,7 +151,6 @@ export default function EventForm() {
         setEventName("");
         setDescription("");
         setCandidateDates([]);
-        formRef.current?.reset();
         router.push("/myEvents");
       } else {
         setMessage({ type: "error", text: result.message });
@@ -154,10 +163,47 @@ export default function EventForm() {
     }
   };
 
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <EventFormStep1
+            eventName={eventName}
+            description={description}
+            onEventNameChange={setEventName}
+            onDescriptionChange={setDescription}
+            disabled={isSubmitting}
+          />
+        );
+      case 2:
+        return (
+          <EventFormStep2
+            candidateDates={candidateDates}
+            onAddDate={addCandidateDate}
+            onRemoveDate={removeCandidateDate}
+            onUpdateTime={updateCandidateTime}
+            disabled={isSubmitting}
+          />
+        );
+      case 3:
+        return (
+          <EventFormStep3
+            eventName={eventName}
+            description={description}
+            candidateDates={candidateDates}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
       <LoadingOverlay isLoading={isSubmitting} message="イベントを作成中..." />
-      <main className="p-4 space-y-6 pb-20">
+      <main className="p-4 space-y-4 pb-20">
         <div ref={topRef}>
           {message && (
             <div
@@ -172,85 +218,38 @@ export default function EventForm() {
           )}
         </div>
 
-        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label
-              htmlFor="eventName"
-              className="text-sm font-medium border-l-4 border-red-400 pl-2"
-            >
-              イベント名
-            </Label>
-            <p className="text-xs text-gray-500">例) お盆のテニスの開催予定</p>
-            <Input
-              id="eventName"
-              name="eventName"
-              placeholder="イベント名を入力してください"
-              value={eventName}
-              onChange={(e) => setEventName(e.target.value)}
-              required
-              disabled={isSubmitting}
-            />
-          </div>
+        {/* 進捗インジケーター */}
+        <StepProgressIndicator
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          stepTitles={stepTitles}
+        />
 
-          <div className="space-y-2">
-            <Label
-              htmlFor="description"
-              className="text-sm font-medium border-l-4 border-red-400 pl-2"
-            >
-              説明文
-            </Label>
-            <p className="text-xs text-gray-500">
-              例) 門真市のテニスコートで試合形式で開催します
-            </p>
-            <Textarea
-              id="description"
-              name="description"
-              placeholder="イベントの詳細を入力してください"
-              className="min-h-[100px]"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={isSubmitting}
-            />
-          </div>
+        {/* 現在のステップのコンテンツ */}
+        <div className="min-h-[300px]">
+          {renderCurrentStep()}
+        </div>
 
-          <div className="space-y-3">
-            <Label className="text-sm font-medium border-l-4 border-red-400 pl-2">
-              開催候補日時
-            </Label>
-
-            <div className="space-y-3">
-              <CandidateDateSelector
-                onAddDate={addCandidateDate}
-                disabled={isSubmitting}
-              />
-              <CandidateDateList
-                candidateDates={candidateDates}
-                onRemoveDate={removeCandidateDate}
-                onUpdateTime={updateCandidateTime}
-                disabled={isSubmitting}
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-3 pt-4 mb-6" ref={candidateListRef}>
+        {/* ナビゲーションボタン */}
+        {currentStep < 3 && (
+          <div className="flex justify-between pt-6 border-t mt-8">
             <Button
-              type="submit"
               variant="outline"
-              size="lg"
-              className="text-lg font-semibold relative overflow-hidden w-[80%] mx-auto py-4 h-auto"
-              disabled={isSubmitting}
-              color="primary"
+              onClick={goToPreviousStep}
+              disabled={currentStep === 1 || isSubmitting}
+              className="px-6"
             >
-              <span
-                className={`absolute bottom-0 left-0 w-8 h-8 ${getColor(0)} rounded-tr-full`}
-              ></span>
-              <span
-                className={`absolute top-0 right-0 w-8 h-8 ${getColor(1)} rounded-bl-full`}
-              ></span>
-              {isSubmitting ? "登録中..." : "登録"}
+              前へ
+            </Button>
+            <Button
+              onClick={goToNextStep}
+              disabled={!canProceedToNext() || isSubmitting}
+              className="px-6"
+            >
+              次へ
             </Button>
           </div>
-        </form>
+        )}
       </main>
     </>
   );

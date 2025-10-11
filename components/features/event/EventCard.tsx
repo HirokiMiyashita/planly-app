@@ -1,14 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import type { Event } from "@/types/event";
-import EventDetails from "./EventDetails";
-import EventEditForm from "./EventEditForm";
 
 interface EventCardProps {
   event: Event;
@@ -16,102 +11,57 @@ interface EventCardProps {
 }
 
 export default function EventCard({ event, isCreator }: EventCardProps) {
-  const [showDetails, setShowDetails] = useState(false);
-  const [showEditForm, setShowEditForm] = useState(false);
   const router = useRouter();
 
-  const handleInvite = async () => {
-    try {
-      const inviteUrl = `${window.location.origin}/participation/${event.id}`;
-      await navigator.clipboard.writeText(inviteUrl);
-      toast.success(`招待URLをコピーしました`, {
-        className: "bg-green-500 text-white",
-      });
-    } catch (error) {
-      console.error(error);
-      toast.error("コピーに失敗しました", {
-        className: "bg-red-500 text-white",
-      });
-    }
+  const handleCardClick = () => {
+    // 詳細ページに遷移
+    router.push(`/event/${event.id}`);
   };
 
-  const handleEdit = () => {
-    setShowEditForm(!showEditForm);
-  };
-
-  const handleEditSuccess = () => {
-    setShowEditForm(false);
-    // ページをリロードして最新の状態を反映
-    router.refresh();
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ja-JP', {
+      month: 'short',
+      day: 'numeric',
+      weekday: 'short'
+    });
   };
 
   return (
-    <Card className="shadow-sm">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
-            <Badge className="text-xs px-2 py-1 inline-block mb-0.5 bg-gray-500 font-bold">
-              イベント名
-            </Badge>
-            <p className="text-gray-600 text-xs">{event.title}</p>
+    <Card 
+      className="shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+      onClick={handleCardClick}
+    >
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex-1">
+            <h3 className="font-semibold text-gray-900 mb-1">{event.title}</h3>
+            {event.description && (
+              <p className="text-sm text-gray-600 line-clamp-2">
+                {event.description}
+              </p>
+            )}
           </div>
           {event.isConfirmed && (
-            <span className="text-sm font-medium text-green-600 bg-green-100 px-3 py-1 rounded-full">
-              ✓ 確定済み
-            </span>
+            <Badge className="bg-green-100 text-green-800 text-xs">
+              確定済み
+            </Badge>
           )}
         </div>
-      </CardHeader>
-      <CardContent>
-        <div>
-          <Badge className="text-xs px-2 py-1 inline-block mb-0.5 bg-gray-500 font-bold">
-            イベント詳細
-          </Badge>
-          <p className="text-gray-600 text-xs">
-            {event.description || "説明なし"}
-          </p>
+        
+        <div className="flex items-center justify-between text-sm text-gray-500">
+          <div className="flex items-center gap-4">
+            <span>{event.slots.length}件の候補日時</span>
+            {isCreator && (
+              <Badge variant="outline" className="text-xs">
+                作成者
+              </Badge>
+            )}
+          </div>
+          <span className="text-xs">
+            {formatDate(event.created_at)}
+          </span>
         </div>
-        <div className="flex justify-end gap-2 mt-4">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowDetails(!showDetails)}
-          >
-            {showDetails ? "参加状況を閉じる" : "参加状況を見る"}
-          </Button>
-          {isCreator && !event.isConfirmed && (
-            <>
-              <Button
-                size="sm"
-                className="bg-blue-500 hover:bg-blue-600 text-white"
-                onClick={handleInvite}
-              >
-                招待
-              </Button>
-              {!event.isConfirmed && (
-                <Button
-                  size="sm"
-                  className="bg-green-500 hover:bg-green-600 text-white"
-                  onClick={handleEdit}
-                >
-                  {showEditForm ? "編集を閉じる" : "編集"}
-                </Button>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* 編集フォーム表示 */}
-        {showEditForm && (
-          <EventEditForm
-            event={event}
-            onClose={() => setShowEditForm(false)}
-            onSuccess={handleEditSuccess}
-          />
-        )}
-
-        {/* 詳細表示 */}
-        {showDetails && <EventDetails event={event} isCreator={isCreator} />}
       </CardContent>
     </Card>
   );

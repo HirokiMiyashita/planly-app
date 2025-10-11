@@ -40,6 +40,7 @@ export async function getEventById(id: string) {
       title: event.title,
       description: event.description,
       created_at: event.createdAt.toISOString(),
+      createdBy: event.createdBy,
       isConfirmed: event.isConfirmed,
       confirmedSlotId: event.confirmedSlotId,
       slots: event.slots.map((slot) => ({

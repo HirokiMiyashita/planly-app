@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import SimpleCalendar from "./SimpleCalendar";
+import TimeSelector from "./TimeSelector";
 
 interface CandidateDateSelectorProps {
-  onAddDate: (date: string) => void;
+  onAddDate: (date: string, startTime?: string, endTime?: string) => void;
   disabled?: boolean;
 }
 
@@ -13,7 +14,9 @@ export default function CandidateDateSelector({
   onAddDate,
   disabled = false,
 }: CandidateDateSelectorProps) {
-  const [customDate, setCustomDate] = useState("");
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [showTimeSelector, setShowTimeSelector] = useState(false);
 
   const getToday = () => {
     const today = new Date();
@@ -32,24 +35,40 @@ export default function CandidateDateSelector({
     return nextWeek.toISOString().split("T")[0];
   };
 
-  const handleAddCustomDate = () => {
-    if (customDate) {
-      onAddDate(customDate);
-      setCustomDate("");
+  const handleDateSelect = (date: string) => {
+    setSelectedDate(date);
+    setShowTimeSelector(true);
+    setShowCalendar(false);
+  };
+
+  const handleTimeConfirm = (startTime: string, endTime: string) => {
+    if (selectedDate) {
+      onAddDate(selectedDate, startTime, endTime);
     }
+    setShowTimeSelector(false);
+    setSelectedDate(null);
+  };
+
+  const handleTimeCancel = () => {
+    setShowTimeSelector(false);
+    setSelectedDate(null);
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="text-xs text-gray-500">候補日</div>
 
+      {/* クイック選択ボタン */}
       <div className="grid grid-cols-3 gap-2">
         <Button
           type="button"
           variant="outline"
           size="sm"
           className="text-xs"
-          onClick={() => onAddDate(getToday())}
+          onClick={() => {
+            setSelectedDate(getToday());
+            setShowTimeSelector(true);
+          }}
           title="今日の日付を候補日として追加"
           disabled={disabled}
         >
@@ -60,7 +79,10 @@ export default function CandidateDateSelector({
           variant="outline"
           size="sm"
           className="text-xs"
-          onClick={() => onAddDate(getTomorrow())}
+          onClick={() => {
+            setSelectedDate(getTomorrow());
+            setShowTimeSelector(true);
+          }}
           title="明日の日付を候補日として追加"
           disabled={disabled}
         >
@@ -71,7 +93,10 @@ export default function CandidateDateSelector({
           variant="outline"
           size="sm"
           className="text-xs"
-          onClick={() => onAddDate(getNextWeek())}
+          onClick={() => {
+            setSelectedDate(getNextWeek());
+            setShowTimeSelector(true);
+          }}
           title="来週の日付を候補日として追加"
           disabled={disabled}
         >
@@ -79,26 +104,36 @@ export default function CandidateDateSelector({
         </Button>
       </div>
 
-      <div className="flex items-center gap-2">
-        <Input
-          type="date"
-          placeholder="日付を選択"
-          className="flex-1"
-          value={customDate}
-          onChange={(e) => setCustomDate(e.target.value)}
-          disabled={disabled}
-        />
+      {/* カレンダー選択 */}
+      <div className="space-y-2">
         <Button
           type="button"
           variant="outline"
           size="sm"
-          className="text-xs"
-          onClick={handleAddCustomDate}
+          className="w-full"
+          onClick={() => setShowCalendar(!showCalendar)}
           disabled={disabled}
         >
-          追加
+          {showCalendar ? "カレンダーを閉じる" : "カレンダーから選択"}
         </Button>
+        
+        {showCalendar && (
+          <SimpleCalendar
+            onDateSelect={handleDateSelect}
+            disabled={disabled}
+          />
+        )}
       </div>
+
+      {/* 時間選択モーダル */}
+      {showTimeSelector && selectedDate && (
+        <TimeSelector
+          date={selectedDate}
+          onConfirm={handleTimeConfirm}
+          onCancel={handleTimeCancel}
+          disabled={disabled}
+        />
+      )}
     </div>
   );
 }

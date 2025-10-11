@@ -8,9 +8,8 @@ import {
   participationEvent,
 } from "@/app/actions/event/participationEvent";
 import { Button } from "@/components/ui/button";
+import LoadingOverlay from "@/components/ui/loading-overlay";
 import type { Participation, Slot } from "@/types/event";
-
-// import { useValidationStore } from "@/stores/validationStore"; // 削除されたためコメントアウト
 
 type LocalParticipationStatus = "○" | "△" | "×" | null;
 
@@ -28,6 +27,8 @@ export default function ParticipationForm({
   isUserRegistered = false,
 }: ParticipationFormProps) {
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   // 各スロットの参加状況を管理（既存の参加状況を初期値として設定）
   const [participations, setParticipations] = useState<
     Record<number, LocalParticipationStatus>
@@ -108,6 +109,7 @@ export default function ParticipationForm({
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const participationData = Object.entries(participations)
         .filter(([_, status]) => status !== null)
@@ -127,6 +129,8 @@ export default function ParticipationForm({
     } catch (error) {
       console.error(error);
       toast.error("エラーが発生しました");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -157,7 +161,9 @@ export default function ParticipationForm({
   ).length;
 
   return (
-    <div className="space-y-4">
+    <>
+      <LoadingOverlay isLoading={isSubmitting} message="参加状況を保存中..." />
+      <div className="space-y-4">
       {/* 参加登録状況 */}
       <div
         className={`p-3 rounded-lg ${
@@ -225,6 +231,7 @@ export default function ParticipationForm({
                           : "border-gray-300 hover:bg-gray-50"
                       }`}
                       onClick={() => updateParticipation(slot.id, status)}
+                      disabled={isSubmitting}
                     >
                       {status}
                     </Button>
@@ -268,14 +275,21 @@ export default function ParticipationForm({
 
       <Button
         onClick={handleParticipation}
+        disabled={isSubmitting}
         className={`w-full ${
           answeredSlotsCount === slots.length
             ? "bg-blue-500 hover:bg-blue-600"
             : "bg-green-500 hover:bg-green-600"
-        }`}
+        } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
       >
-        {answeredSlotsCount === slots.length ? "回答を更新" : "参加状況を保存"}
+        {isSubmitting 
+          ? "保存中..." 
+          : answeredSlotsCount === slots.length 
+            ? "回答を更新" 
+            : "参加状況を保存"
+        }
       </Button>
-    </div>
+      </div>
+    </>
   );
 }

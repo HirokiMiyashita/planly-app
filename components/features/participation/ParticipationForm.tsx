@@ -322,7 +322,13 @@ export default function ParticipationForm({
               {slot.participations.length > 0 && (
                 <div className="border-t pt-3">
                   <p className="text-sm font-medium text-gray-700 mb-2">
-                    回答状況:
+                    回答状況: 参加予定人数
+                    {
+                      slot.participations.filter(
+                        (participation) => participation.status === "○",
+                      ).length
+                    }
+                    人
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {slot.participations.map((participation) => (

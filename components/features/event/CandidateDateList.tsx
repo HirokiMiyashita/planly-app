@@ -2,9 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import TimeSelectInput from "./TimeSelectInput";
-
 import type { CandidateDate } from "@/types/event";
+import TimeSelectInput from "./TimeSelectInput";
 
 interface CandidateDateListProps {
   candidateDates: CandidateDate[];

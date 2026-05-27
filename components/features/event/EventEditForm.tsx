@@ -238,7 +238,9 @@ export default function EventEditForm({
                         <TimeSelectInput
                           idPrefix={`slot-${slot.id}-start`}
                           value={slot.start_at}
-                          onChange={(value) => updateSlot(index, "start_at", value)}
+                          onChange={(value) =>
+                            updateSlot(index, "start_at", value)
+                          }
                           disabled={isLoading}
                         />
                       </div>
@@ -252,7 +254,9 @@ export default function EventEditForm({
                         <TimeSelectInput
                           idPrefix={`slot-${slot.id}-end`}
                           value={slot.end_at}
-                          onChange={(value) => updateSlot(index, "end_at", value)}
+                          onChange={(value) =>
+                            updateSlot(index, "end_at", value)
+                          }
                           disabled={isLoading}
                         />
                       </div>

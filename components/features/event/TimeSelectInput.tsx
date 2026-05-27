@@ -8,8 +8,12 @@ interface TimeSelectInputProps {
   className?: string;
 }
 
-const HOURS = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, "0"));
-const MINUTES = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, "0"));
+const HOURS = Array.from({ length: 24 }, (_, i) =>
+  i.toString().padStart(2, "0"),
+);
+const MINUTES = Array.from({ length: 60 }, (_, i) =>
+  i.toString().padStart(2, "0"),
+);
 
 const normalizeTime = (value: string) => {
   const [rawHour = "09", rawMinute = "00"] = value.split(":");
@@ -36,7 +40,9 @@ export default function TimeSelectInput({
   };
 
   return (
-    <div className={`grid grid-cols-[1fr_auto_1fr] items-center gap-2 ${className}`}>
+    <div
+      className={`grid grid-cols-[1fr_auto_1fr] items-center gap-2 ${className}`}
+    >
       <select
         id={`${idPrefix}-hour`}
         value={hour}

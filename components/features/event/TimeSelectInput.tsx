@@ -88,7 +88,7 @@ export default function TimeSelectInput({
         }
       }}
       disabled={disabled}
-      className={`border-input dark:bg-input/30 h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      className={`border-input dark:bg-input/30 h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base md:text-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
     />
   );
 }

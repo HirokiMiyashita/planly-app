@@ -43,7 +43,10 @@ export default function TimeSelector({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h3 className="text-lg font-semibold mb-4">時間を設定</h3>
+        <h3 className="text-lg font-semibold">時間を設定</h3>
+        <p className="text-[12px] text-gray-500 mt-1 mb-4">
+          入力例: 9:30 / 09:30 / 930 / 0930
+        </p>
 
         <div className="space-y-4">
           {/* 選択された日付の表示 */}

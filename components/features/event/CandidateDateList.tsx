@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import TimeSelectInput from "./TimeSelectInput";
 
 import type { CandidateDate } from "@/types/event";
 
@@ -67,25 +67,23 @@ export default function CandidateDateList({
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1 w-[85%]">
                 <Label className="text-xs text-gray-500">開始時間</Label>
-                <Input
-                  type="time"
+                <TimeSelectInput
+                  idPrefix={`candidate-${candidate.id || 0}-start`}
                   value={candidate.startTime}
-                  onChange={(e) =>
-                    onUpdateTime(candidate.id || 0, "startTime", e.target.value)
+                  onChange={(value) =>
+                    onUpdateTime(candidate.id || 0, "startTime", value)
                   }
-                  className="text-xs"
                   disabled={disabled}
                 />
               </div>
               <div className="space-y-1 w-[85%]">
                 <Label className="text-xs text-gray-500">終了時間</Label>
-                <Input
-                  type="time"
+                <TimeSelectInput
+                  idPrefix={`candidate-${candidate.id || 0}-end`}
                   value={candidate.endTime}
-                  onChange={(e) =>
-                    onUpdateTime(candidate.id || 0, "endTime", e.target.value)
+                  onChange={(value) =>
+                    onUpdateTime(candidate.id || 0, "endTime", value)
                   }
-                  className="text-xs"
                   disabled={disabled}
                 />
               </div>

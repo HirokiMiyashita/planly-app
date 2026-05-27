@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import TimeSelectInput from "./TimeSelectInput";
 
 interface TimeSelectorProps {
   date: string;
@@ -63,26 +63,22 @@ export default function TimeSelector({
                 >
                   開始時刻
                 </Label>
-                <Input
-                  id="startTime"
-                  type="time"
+                <TimeSelectInput
+                  idPrefix="startTime"
                   value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
+                  onChange={setStartTime}
                   disabled={disabled}
-                  className="text-sm"
                 />
               </div>
               <div>
                 <Label htmlFor="endTime" className="text-xs text-gray-600 mb-2">
                   終了時刻
                 </Label>
-                <Input
-                  id="endTime"
-                  type="time"
+                <TimeSelectInput
+                  idPrefix="endTime"
                   value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
+                  onChange={setEndTime}
                   disabled={disabled}
-                  className="text-sm"
                 />
               </div>
             </div>

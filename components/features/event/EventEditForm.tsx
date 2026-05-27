@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import LoadingOverlay from "@/components/ui/loading-overlay";
 import { Textarea } from "@/components/ui/textarea";
 import type { Event } from "@/types/event";
+import TimeSelectInput from "./TimeSelectInput";
 
 interface EventEditFormProps {
   event: Event;
@@ -234,13 +235,10 @@ export default function EventEditForm({
                         >
                           開始時間
                         </Label>
-                        <Input
-                          type="time"
+                        <TimeSelectInput
+                          idPrefix={`slot-${slot.id}-start`}
                           value={slot.start_at}
-                          onChange={(e) =>
-                            updateSlot(index, "start_at", e.target.value)
-                          }
-                          className="text-xs w-full"
+                          onChange={(value) => updateSlot(index, "start_at", value)}
                           disabled={isLoading}
                         />
                       </div>
@@ -251,13 +249,10 @@ export default function EventEditForm({
                         >
                           終了時間
                         </Label>
-                        <Input
-                          type="time"
+                        <TimeSelectInput
+                          idPrefix={`slot-${slot.id}-end`}
                           value={slot.end_at}
-                          onChange={(e) =>
-                            updateSlot(index, "end_at", e.target.value)
-                          }
-                          className="text-xs w-full"
+                          onChange={(value) => updateSlot(index, "end_at", value)}
                           disabled={isLoading}
                         />
                       </div>

@@ -101,7 +101,10 @@ export const authOptions: NextAuthOptions = {
           lineUserName?: string;
         };
 
-        token.lineUserId = guestUser.lineUserId ?? guestUser.id ?? token.sub;
+        token.lineUserId =
+          guestUser.lineUserId ??
+          guestUser.id ??
+          (typeof token.sub === "string" ? token.sub : "");
         token.lineUserName =
           guestUser.lineUserName ?? guestUser.name ?? "ゲスト";
         token.isFriendAdded = false;
@@ -110,7 +113,7 @@ export const authOptions: NextAuthOptions = {
       // 初回コールバック以降でもIDを欠損させない
       token.lineUserId =
         token.lineUserId ??
-        (typeof token.sub === "string" ? token.sub : undefined);
+        (typeof token.sub === "string" ? token.sub : "");
       token.lineUserName =
         token.lineUserName ??
         (typeof token.name === "string" ? token.name : undefined) ??

@@ -13,15 +13,8 @@ export const useAuth = () => {
     setIsLineBrowser(isLine);
   }, []);
 
-  // 自動ログイン（LINE内ブラウザのみ）
-  useEffect(() => {
-    if (status === "unauthenticated" && isLineBrowser) {
-      // LINE内ブラウザの場合は即座にログイン
-      signIn("line");
-    }
-  }, [isLineBrowser, status]);
-
-  const handleSignIn = () => signIn("line");
+  const handleSignIn = (provider: "line" | "guest" = "line") =>
+    signIn(provider, { callbackUrl: "/" });
   const handleSignOut = () => signOut();
 
   return {

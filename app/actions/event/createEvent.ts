@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
@@ -36,26 +35,7 @@ export async function createEvent(formData: FormData) {
     // セッションからユーザー情報を取得
     const session = await getServerSession(authOptions);
 
-    // セッションにlineUserIdがない場合、JWTトークンから直接取得
-    let lineUserId = session?.user?.lineUserId;
-    if (!lineUserId) {
-      try {
-        const cookieStore = await cookies();
-        const token =
-          cookieStore.get("next-auth.session-token")?.value ||
-          cookieStore.get("__Secure-next-auth.session-token")?.value;
-
-        if (token) {
-          // JWTトークンをBase64デコード（署名検証なし）
-          const payload = JSON.parse(
-            Buffer.from(token.split(".")[1], "base64").toString(),
-          );
-          lineUserId = payload?.lineUserId;
-        }
-      } catch (error) {
-        console.error("JWT decode error:", error);
-      }
-    }
+    const lineUserId = session?.user?.lineUserId || session?.user?.id;
 
     if (!lineUserId) {
       return { success: false, message: "ログインが必要です" };

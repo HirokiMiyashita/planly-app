@@ -1,4 +1,5 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 import LineProvider from "next-auth/providers/line";
 import { prisma } from "@/lib/prisma";
 
@@ -12,6 +13,35 @@ export const authOptions: NextAuthOptions = {
         params: {
           scope: "profile openid message",
         },
+      },
+    }),
+    CredentialsProvider({
+      id: "guest",
+      name: "ゲスト",
+      credentials: {},
+      async authorize() {
+        const guestId = `guest_${crypto.randomUUID()}`;
+        const guestName = "ゲスト";
+
+        await prisma.user.upsert({
+          where: { id: guestId },
+          update: {
+            name: guestName,
+          },
+          create: {
+            id: guestId,
+            name: guestName,
+            isFriendAdded: false,
+          },
+        });
+
+        return {
+          id: guestId,
+          name: guestName,
+          lineUserId: guestId,
+          lineUserName: guestName,
+          isFriendAdded: false,
+        };
       },
     }),
   ],
@@ -40,7 +70,7 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-    async jwt({ token, account, profile }) {
+    async jwt({ token, account, profile, user }) {
       // 初回サインイン時にユーザー情報を保存
       if (account && profile) {
         token.lineUserId = profile.sub as string;
@@ -58,6 +88,28 @@ export const authOptions: NextAuthOptions = {
           token.isFriendAdded = false;
         }
       }
+
+      if ((account?.provider === "guest" || account?.provider === "credentials") && user) {
+        const guestUser = user as {
+          id?: string;
+          name?: string | null;
+          lineUserId?: string;
+          lineUserName?: string;
+        };
+
+        token.lineUserId = guestUser.lineUserId ?? guestUser.id ?? token.sub;
+        token.lineUserName = guestUser.lineUserName ?? guestUser.name ?? "ゲスト";
+        token.isFriendAdded = false;
+      }
+
+      // 初回コールバック以降でもIDを欠損させない
+      token.lineUserId =
+        token.lineUserId ?? (typeof token.sub === "string" ? token.sub : undefined);
+      token.lineUserName =
+        token.lineUserName ??
+        (typeof token.name === "string" ? token.name : undefined) ??
+        "ユーザー";
+
       return token;
     },
     async session({ session, token }) {
@@ -81,6 +133,9 @@ export const authOptions: NextAuthOptions = {
         ...session,
         user: {
           ...session.user,
+          id:
+            (token.lineUserId as string | undefined) ??
+            (typeof token.sub === "string" ? token.sub : ""),
           lineUserId: token.lineUserId,
           lineUserName: token.lineUserName,
           isFriendAdded: isFriendAdded,

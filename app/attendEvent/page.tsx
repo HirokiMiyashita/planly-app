@@ -1,29 +1,24 @@
 import { Suspense } from "react";
 import { getUpcomingEvents } from "@/app/actions/event/getUpcomingEvents";
 import Auth from "@/components/features/auth/Auth";
-import Header from "@/components/features/auth/Header";
-import EventCard from "@/components/features/event/EventCard";
+import UpcomingEventSchedule from "@/components/features/event/UpcomingEventSchedule";
 
 function LoadingSkeleton() {
   return (
-    <div className="p-4 pb-20">
-      <h1 className="text-2xl font-bold mb-4">参加するイベント</h1>
-      <div className="space-y-4">
-        <div className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-          <div className="h-3 bg-gray-200 rounded w-3/4 mb-4"></div>
-          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+    <div className="bg-gray-100 min-h-[70vh]">
+      <div className="bg-red-500 p-4 pb-6 animate-pulse">
+        <div className="h-7 w-24 rounded bg-red-400 mb-4" />
+        <div className="h-8 w-36 rounded bg-red-400 mb-3" />
+        <div className="grid grid-cols-7 gap-2">
+          {Array.from({ length: 14 }, (_, order) => order + 1).map((order) => (
+            <div key={`calendar-skeleton-${order}`} className="h-8 rounded bg-red-400" />
+          ))}
         </div>
-        <div className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-          <div className="h-3 bg-gray-200 rounded w-3/4 mb-4"></div>
-          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-          <div className="h-3 bg-gray-200 rounded w-3/4 mb-4"></div>
-          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-        </div>
+      </div>
+      <div className="bg-white p-4 space-y-3">
+        <div className="h-12 rounded bg-gray-100" />
+        <div className="h-12 rounded bg-gray-100" />
+        <div className="h-12 rounded bg-gray-100" />
       </div>
     </div>
   );
@@ -34,8 +29,8 @@ async function EventList() {
 
   if (events.length === 0) {
     return (
-      <div className="p-4 pb-20">
-        <div className="text-center py-8">
+      <div className="bg-white p-4 pb-20">
+        <div className="text-center py-10">
           <p className="text-gray-500">参加するイベントはありません</p>
         </div>
       </div>
@@ -43,20 +38,13 @@ async function EventList() {
   }
 
   return (
-    <div className="p-4 pb-20">
-      <div className="space-y-4">
-        {events.map((event) => (
-          <EventCard key={event.id} event={event} isCreator={false} />
-        ))}
-      </div>
-    </div>
+    <UpcomingEventSchedule events={events} />
   );
 }
 
 export default function AttendEventPage() {
   return (
     <Auth>
-      <Header title="参加するイベント" />
       <Suspense fallback={<LoadingSkeleton />}>
         <EventList />
       </Suspense>

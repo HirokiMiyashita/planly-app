@@ -32,11 +32,19 @@ export default function Auth({ children }: AuthProps) {
         <div className="text-center space-y-4 max-w-md w-full px-4">
           <h2 className="text-xl font-bold text-gray-800">Planlyへようこそ</h2>
           <p className="text-gray-600">
-            LINEアカウントでログインして、イベントの管理を始めましょう
+            ログイン方法を選んで、イベントの管理を始めましょう
           </p>
-          <Button onClick={signIn} className="w-full">
+          <Button onClick={() => signIn("line")} className="w-full">
             LINEでログイン
           </Button>
+          <Button variant="outline" onClick={() => signIn("guest")} className="w-full">
+            ゲストとして利用
+          </Button>
+          {!isLineBrowser && (
+            <p className="text-xs text-gray-500">
+              ゲスト利用では一部LINE連携機能を利用できません
+            </p>
+          )}
         </div>
       </div>
     );

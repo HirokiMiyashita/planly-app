@@ -17,6 +17,7 @@ export default function Home() {
   const { isOpen, closeOnboarding } = useOnboarding();
   const { getColor } = useRandomColors({ count: 8 });
   const { update: updateSession } = useSession();
+  const isGuestUser = Boolean(user?.lineUserId?.startsWith("guest_"));
 
   const handleCreateEvent = () => {
     router.push("/createEvent");
@@ -121,7 +122,7 @@ export default function Home() {
               ></span>
               <span className="relative z-10">参加したイベント一覧</span>
             </Button>
-            {user && user.isFriendAdded === false ? (
+            {user && user.isFriendAdded === false && !isGuestUser ? (
               <FriendAddAlert onAddFriend={handleAddFriend} />
             ) : null}
           </div>

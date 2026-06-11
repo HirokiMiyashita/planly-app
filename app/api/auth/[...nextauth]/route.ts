@@ -112,8 +112,7 @@ export const authOptions: NextAuthOptions = {
 
       // 初回コールバック以降でもIDを欠損させない
       token.lineUserId =
-        token.lineUserId ??
-        (typeof token.sub === "string" ? token.sub : "");
+        token.lineUserId ?? (typeof token.sub === "string" ? token.sub : "");
       token.lineUserName =
         token.lineUserName ??
         (typeof token.name === "string" ? token.name : undefined) ??

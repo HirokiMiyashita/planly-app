@@ -189,12 +189,27 @@ export default function ParticipationForm({
     label: string;
     activeClass: string;
   }> = [
-    { value: "○", label: "参加", activeClass: "bg-red-500 text-white border-red-500" },
-    { value: "×", label: "不参加", activeClass: "bg-gray-500 text-white border-gray-500" },
-    { value: "△", label: "未定", activeClass: "bg-slate-500 text-white border-slate-500" },
+    {
+      value: "○",
+      label: "参加",
+      activeClass: "bg-red-500 text-white border-red-500",
+    },
+    {
+      value: "×",
+      label: "不参加",
+      activeClass: "bg-gray-500 text-white border-gray-500",
+    },
+    {
+      value: "△",
+      label: "未定",
+      activeClass: "bg-slate-500 text-white border-slate-500",
+    },
   ];
 
-  const statusLabelMap: Record<Exclude<LocalParticipationStatus, null>, string> = {
+  const statusLabelMap: Record<
+    Exclude<LocalParticipationStatus, null>,
+    string
+  > = {
     "○": "参加",
     "×": "不参加",
     "△": "未定",
@@ -233,22 +248,32 @@ export default function ParticipationForm({
         {slots.map((slot) => {
           const isAnswered = isAlreadyAnswered(slot.id);
           const eventDate = new Date(slot.day);
-          const joinedUsers = slot.participations.filter((p) => p.status === "○");
-          const absentUsers = slot.participations.filter((p) => p.status === "×");
-          const pendingUsers = slot.participations.filter((p) => p.status === "△");
+          const joinedUsers = slot.participations.filter(
+            (p) => p.status === "○",
+          );
+          const absentUsers = slot.participations.filter(
+            (p) => p.status === "×",
+          );
+          const pendingUsers = slot.participations.filter(
+            (p) => p.status === "△",
+          );
 
           return (
             <div
               key={slot.id}
               className={`rounded-2xl overflow-hidden border ${
-                isAnswered ? "border-red-200 bg-red-50/40" : "border-gray-200 bg-white"
+                isAnswered
+                  ? "border-red-200 bg-red-50/40"
+                  : "border-gray-200 bg-white"
               }`}
             >
               <div className="p-4 md:p-5 space-y-4">
                 <div className="space-y-1">
                   <p className="text-4xl font-bold tracking-tight text-gray-900">
                     {eventDate.getMonth() + 1}/{eventDate.getDate()}（
-                    {eventDate.toLocaleDateString("ja-JP", { weekday: "short" })}
+                    {eventDate.toLocaleDateString("ja-JP", {
+                      weekday: "short",
+                    })}
                     ）
                   </p>
                   <p className="text-sm text-gray-500">
@@ -264,7 +289,9 @@ export default function ParticipationForm({
                         key={option.value}
                         type="button"
                         variant="outline"
-                        onClick={() => updateParticipation(slot.id, option.value)}
+                        onClick={() =>
+                          updateParticipation(slot.id, option.value)
+                        }
                         disabled={isSubmitting}
                         className={`h-11 rounded-full text-base border ${
                           isActive
@@ -280,7 +307,9 @@ export default function ParticipationForm({
                 </div>
 
                 {getError(`slot_${slot.id}`) && (
-                  <p className="text-xs text-red-500">{getError(`slot_${slot.id}`)}</p>
+                  <p className="text-xs text-red-500">
+                    {getError(`slot_${slot.id}`)}
+                  </p>
                 )}
 
                 <div className="flex justify-end">
@@ -292,7 +321,9 @@ export default function ParticipationForm({
                     disabled={isSubmitting}
                     className="text-xs text-gray-500 hover:text-gray-700"
                   >
-                    {showCommentInput[slot.id] ? "コメントを閉じる" : "コメントを追加"}
+                    {showCommentInput[slot.id]
+                      ? "コメントを閉じる"
+                      : "コメントを追加"}
                   </Button>
                 </div>
 
@@ -338,7 +369,9 @@ export default function ParticipationForm({
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-400">まだ回答はありません</p>
+                      <p className="text-sm text-gray-400">
+                        まだ回答はありません
+                      </p>
                     )}
                   </div>
                 ))}

@@ -11,7 +11,10 @@ function LoadingSkeleton() {
         <div className="h-8 w-36 rounded bg-red-400 mb-3" />
         <div className="grid grid-cols-7 gap-2">
           {Array.from({ length: 14 }, (_, order) => order + 1).map((order) => (
-            <div key={`calendar-skeleton-${order}`} className="h-8 rounded bg-red-400" />
+            <div
+              key={`calendar-skeleton-${order}`}
+              className="h-8 rounded bg-red-400"
+            />
           ))}
         </div>
       </div>
@@ -37,9 +40,7 @@ async function EventList() {
     );
   }
 
-  return (
-    <UpcomingEventSchedule events={events} />
-  );
+  return <UpcomingEventSchedule events={events} />;
 }
 
 export default function AttendEventPage() {

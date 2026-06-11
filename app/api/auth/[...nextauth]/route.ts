@@ -89,7 +89,11 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      if ((account?.provider === "guest" || account?.provider === "credentials") && user) {
+      if (
+        (account?.provider === "guest" ||
+          account?.provider === "credentials") &&
+        user
+      ) {
         const guestUser = user as {
           id?: string;
           name?: string | null;
@@ -98,13 +102,15 @@ export const authOptions: NextAuthOptions = {
         };
 
         token.lineUserId = guestUser.lineUserId ?? guestUser.id ?? token.sub;
-        token.lineUserName = guestUser.lineUserName ?? guestUser.name ?? "ゲスト";
+        token.lineUserName =
+          guestUser.lineUserName ?? guestUser.name ?? "ゲスト";
         token.isFriendAdded = false;
       }
 
       // 初回コールバック以降でもIDを欠損させない
       token.lineUserId =
-        token.lineUserId ?? (typeof token.sub === "string" ? token.sub : undefined);
+        token.lineUserId ??
+        (typeof token.sub === "string" ? token.sub : undefined);
       token.lineUserName =
         token.lineUserName ??
         (typeof token.name === "string" ? token.name : undefined) ??

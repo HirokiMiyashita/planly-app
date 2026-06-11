@@ -37,7 +37,11 @@ export default function Auth({ children }: AuthProps) {
           <Button onClick={() => signIn("line")} className="w-full">
             LINEでログイン
           </Button>
-          <Button variant="outline" onClick={() => signIn("guest")} className="w-full">
+          <Button
+            variant="outline"
+            onClick={() => signIn("guest")}
+            className="w-full"
+          >
             ゲストとして利用
           </Button>
           {!isLineBrowser && (

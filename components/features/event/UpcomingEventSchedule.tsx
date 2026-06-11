@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -53,7 +53,9 @@ const formatMonthLabel = (date: Date) =>
 
 const getUpcomingSlots = (event: Event, todayKey: string): Slot[] => {
   if (event.isConfirmed && event.confirmedSlotId) {
-    const confirmedSlot = event.slots.find((slot) => slot.id === event.confirmedSlotId);
+    const confirmedSlot = event.slots.find(
+      (slot) => slot.id === event.confirmedSlotId,
+    );
     if (confirmedSlot && confirmedSlot.day >= todayKey) {
       return [confirmedSlot];
     }
@@ -67,7 +69,8 @@ const getUpcomingSlots = (event: Event, todayKey: string): Slot[] => {
     );
 };
 
-const getWeekday = (dateKey: string) => WEEK_NAMES[fromDateKey(dateKey).getDay()];
+const getWeekday = (dateKey: string) =>
+  WEEK_NAMES[fromDateKey(dateKey).getDay()];
 
 export default function UpcomingEventSchedule({
   events,
@@ -239,7 +242,9 @@ export default function UpcomingEventSchedule({
               >
                 ←
               </Button>
-              <p className="text-3xl font-bold">{formatMonthLabel(currentMonth)}</p>
+              <p className="text-3xl font-bold">
+                {formatMonthLabel(currentMonth)}
+              </p>
               <Button
                 variant="ghost"
                 size="sm"
@@ -264,7 +269,8 @@ export default function UpcomingEventSchedule({
                   return <div key={cell.key} className="h-10" />;
                 }
 
-                const hasEvents = (itemsByDay.get(cell.dateKey)?.length ?? 0) > 0;
+                const hasEvents =
+                  (itemsByDay.get(cell.dateKey)?.length ?? 0) > 0;
                 const isSelected = selectedDateKey === cell.dateKey;
 
                 return (
@@ -301,21 +307,23 @@ export default function UpcomingEventSchedule({
                 weekday: "long",
               })}
             </p>
-            {(selectedItems.length > 0 ? selectedItems : monthlyItems).map((item) => (
-              <button
-                type="button"
-                key={`${item.eventId}-${item.day}`}
-                onClick={() => openEvent(item.eventId)}
-                className="w-full rounded-xl border p-4 text-left hover:bg-gray-50"
-              >
-                <p className="text-lg font-semibold text-gray-900 line-clamp-1">
-                  {item.title}
-                </p>
-                <p className="mt-1 text-sm text-gray-500">
-                  {item.startAt} - {item.endAt}
-                </p>
-              </button>
-            ))}
+            {(selectedItems.length > 0 ? selectedItems : monthlyItems).map(
+              (item) => (
+                <button
+                  type="button"
+                  key={`${item.eventId}-${item.day}`}
+                  onClick={() => openEvent(item.eventId)}
+                  className="w-full rounded-xl border p-4 text-left hover:bg-gray-50"
+                >
+                  <p className="text-lg font-semibold text-gray-900 line-clamp-1">
+                    {item.title}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {item.startAt} - {item.endAt}
+                  </p>
+                </button>
+              ),
+            )}
             {selectedItems.length === 0 && monthlyItems.length === 0 && (
               <p className="text-sm text-gray-500 py-4">
                 この月の参加予定はありません
@@ -334,7 +342,10 @@ export default function UpcomingEventSchedule({
                   </div>
                   {items.map((item) => {
                     const date = fromDateKey(item.day);
-                    const overflowCount = Math.max(item.participantNames.length - 5, 0);
+                    const overflowCount = Math.max(
+                      item.participantNames.length - 5,
+                      0,
+                    );
                     return (
                       <button
                         type="button"
@@ -360,15 +371,22 @@ export default function UpcomingEventSchedule({
                             </p>
                             {item.participantNames.length > 0 && (
                               <div className="mt-3 flex items-center gap-2">
-                                {item.participantNames.slice(0, 5).map((name, index) => (
-                                  <Avatar key={`${item.eventId}-${name}-${index}`} className="h-8 w-8">
-                                    <AvatarFallback className="text-[10px] bg-gray-200 text-gray-700">
-                                      {name.slice(0, 1)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                ))}
+                                {item.participantNames
+                                  .slice(0, 5)
+                                  .map((name, index) => (
+                                    <Avatar
+                                      key={`${item.eventId}-${name}-${index}`}
+                                      className="h-8 w-8"
+                                    >
+                                      <AvatarFallback className="text-[10px] bg-gray-200 text-gray-700">
+                                        {name.slice(0, 1)}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  ))}
                                 {overflowCount > 0 && (
-                                  <span className="text-base text-gray-500">+{overflowCount}</span>
+                                  <span className="text-base text-gray-500">
+                                    +{overflowCount}
+                                  </span>
                                 )}
                               </div>
                             )}

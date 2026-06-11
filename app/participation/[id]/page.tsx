@@ -1,5 +1,5 @@
-import { use } from "react";
 import Link from "next/link";
+import { use } from "react";
 import { getEventById } from "@/app/actions/event/getEventById";
 import Auth from "@/components/features/auth/Auth";
 import ParticipationForm from "@/components/features/participation/ParticipationForm";

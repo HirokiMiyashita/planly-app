@@ -16,7 +16,11 @@ export default function SignInPage() {
         <Button onClick={() => signIn("line")} className="w-full">
           LINEでログイン
         </Button>
-        <Button variant="outline" onClick={() => signIn("guest")} className="w-full">
+        <Button
+          variant="outline"
+          onClick={() => signIn("guest")}
+          className="w-full"
+        >
           ゲストとして利用
         </Button>
         {!isLineBrowser && (

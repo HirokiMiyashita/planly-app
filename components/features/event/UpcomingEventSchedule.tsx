@@ -184,7 +184,7 @@ export default function UpcomingEventSchedule({
   };
 
   const openEvent = (eventId: number) => {
-    router.push(`/event/${eventId}`);
+    router.push(`/participation/${eventId}`);
   };
 
   if (scheduleItems.length === 0) {

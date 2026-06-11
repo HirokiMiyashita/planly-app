@@ -1,7 +1,7 @@
 import { use } from "react";
+import Link from "next/link";
 import { getEventById } from "@/app/actions/event/getEventById";
 import Auth from "@/components/features/auth/Auth";
-import Header from "@/components/features/auth/Header";
 import ParticipationForm from "@/components/features/participation/ParticipationForm";
 
 interface ParticipationPageProps {
@@ -27,34 +27,39 @@ export default function Participation({ params }: ParticipationPageProps) {
 
   return (
     <Auth>
-      <div className="p-4 pb-20">
-        <Header title="イベント参加" />
-        <div className="space-y-6 mt-4">
-          {/* イベント基本情報 */}
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-2">{event.title}</h2>
-            {event.description && (
-              <p className="text-gray-600 mb-3">{event.description}</p>
-            )}
-            <p className="text-sm text-gray-500">
-              作成日: {new Date(event.created_at).toLocaleDateString("ja-JP")}
-            </p>
+      <div className="min-h-screen bg-gray-100 pb-20">
+        <div className="bg-red-500 text-white px-4 py-5">
+          <div className="flex items-center justify-between">
+            <Link href="/attendEvent" className="text-2xl leading-none">
+              ←
+            </Link>
+            <h1 className="text-3xl font-bold tracking-wide">イベント</h1>
+            <Link href="/" className="text-2xl leading-none">
+              ×
+            </Link>
           </div>
+        </div>
 
-          {/* 候補日程 */}
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-3">候補日程</h3>
-            {event.slots.length > 0 ? (
-              <ParticipationForm
-                slots={event.slots}
-                eventId={id}
-                currentUserParticipation={event.currentUserParticipation}
-                isUserRegistered={event.isUserRegistered}
-              />
-            ) : (
-              <p className="text-gray-500">候補日程が設定されていません。</p>
-            )}
-          </div>
+        <div className="px-4 py-4 bg-white border-b">
+          <h2 className="text-2xl font-bold text-gray-900">{event.title}</h2>
+          {event.description && (
+            <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">
+              {event.description}
+            </p>
+          )}
+        </div>
+
+        <div className="px-4 py-4">
+          {event.slots.length > 0 ? (
+            <ParticipationForm
+              slots={event.slots}
+              eventId={id}
+              currentUserParticipation={event.currentUserParticipation}
+              isUserRegistered={event.isUserRegistered}
+            />
+          ) : (
+            <p className="text-gray-500">候補日程が設定されていません。</p>
+          )}
         </div>
       </div>
     </Auth>

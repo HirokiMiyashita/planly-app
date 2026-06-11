@@ -9,7 +9,6 @@ import {
 } from "@/app/actions/event/participationEvent";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import LoadingOverlay from "@/components/ui/loading-overlay";
 import { Textarea } from "@/components/ui/textarea";
 import type { Participation, Slot } from "@/types/event";
 
@@ -19,17 +18,15 @@ interface ParticipationFormProps {
   slots: Slot[];
   eventId: string;
   currentUserParticipation?: Participation[];
-  isUserRegistered?: boolean;
 }
 
 export default function ParticipationForm({
   slots,
   eventId,
   currentUserParticipation = [],
-  isUserRegistered = false,
 }: ParticipationFormProps) {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [savingSlotId, setSavingSlotId] = useState<number | null>(null);
 
   // 各スロットの参加状況を管理（既存の参加状況を初期値として設定）
   const [participations, setParticipations] = useState<
@@ -71,10 +68,6 @@ export default function ParticipationForm({
   // バリデーション状態（useValidationStoreの代替）
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const setError = (key: string, message: string) => {
-    setErrors((prev) => ({ ...prev, [key]: message }));
-  };
-
   const clearError = (key: string) => {
     setErrors((prev) => {
       const newErrors = { ...prev };
@@ -83,11 +76,43 @@ export default function ParticipationForm({
     });
   };
 
-  const clearAllErrors = () => {
-    setErrors({});
-  };
-
   const getError = (key: string) => errors[key];
+
+  const saveSingleParticipation = async (
+    slotId: number,
+    status: LocalParticipationStatus,
+    comment: string,
+    showSuccessToast = false,
+  ) => {
+    if (!status) {
+      return;
+    }
+
+    setSavingSlotId(slotId);
+    try {
+      const result = await participationEvent(eventId, [
+        {
+          slotId,
+          status: status as ParticipationStatus,
+          comment,
+        },
+      ]);
+
+      if (result.success) {
+        if (showSuccessToast) {
+          toast.success("参加状況を保存しました");
+        }
+        router.refresh();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("エラーが発生しました");
+    } finally {
+      setSavingSlotId(null);
+    }
+  };
 
   // 参加状況を更新する関数
   const updateParticipation = (
@@ -102,6 +127,7 @@ export default function ParticipationForm({
     // ステータスが選択されたらエラーをクリア
     if (status !== null) {
       clearError(`slot_${slotId}`);
+      void saveSingleParticipation(slotId, status, comments[slotId] || "");
     }
   };
 
@@ -121,57 +147,6 @@ export default function ParticipationForm({
     }));
   };
 
-  // バリデーション関数
-  const validateParticipations = () => {
-    clearAllErrors();
-    let hasErrors = false;
-
-    slots.forEach((slot) => {
-      if (
-        participations[slot.id] === null ||
-        participations[slot.id] === undefined
-      ) {
-        setError(`slot_${slot.id}`, "参加状況を選択してください");
-        hasErrors = true;
-      }
-    });
-
-    return !hasErrors;
-  };
-
-  const handleParticipation = async () => {
-    // バリデーション実行
-    if (!validateParticipations()) {
-      toast.error("全ての候補日程で参加状況を選択してください");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const participationData = Object.entries(participations)
-        .filter(([_, status]) => status !== null)
-        .map(([slotId, status]) => ({
-          slotId: parseInt(slotId, 10),
-          status: status as ParticipationStatus,
-          comment: comments[parseInt(slotId, 10)] || "",
-        }));
-
-      const result = await participationEvent(eventId, participationData);
-
-      if (result.success) {
-        toast.success("参加状況を保存しました");
-        router.refresh();
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("エラーが発生しました");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   // 回答済みかどうかを判定する関数
   const isAlreadyAnswered = (slotId: number) => {
     return (
@@ -179,10 +154,18 @@ export default function ParticipationForm({
     );
   };
 
-  // 回答済みのスロット数をカウント
-  const answeredSlotsCount = Object.values(participations).filter(
-    (status) => status !== null && status !== undefined,
-  ).length;
+  const handleCommentBlur = (slotId: number) => {
+    const selectedStatus = participations[slotId];
+    if (!selectedStatus) {
+      return;
+    }
+    void saveSingleParticipation(
+      slotId,
+      selectedStatus,
+      comments[slotId] || "",
+      true,
+    );
+  };
 
   const statusOptions: Array<{
     value: Exclude<LocalParticipationStatus, null>;
@@ -216,186 +199,136 @@ export default function ParticipationForm({
   };
 
   return (
-    <>
-      <LoadingOverlay isLoading={isSubmitting} message="参加状況を保存中..." />
-      <div className="space-y-4">
-        {/* 参加登録状況 */}
-        <div
-          className={`p-3 rounded-lg ${
-            isUserRegistered
-              ? "bg-green-50 border border-green-200"
-              : "bg-yellow-50 border border-yellow-200"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {isUserRegistered ? (
-              <>
-                <span className="text-green-600">✓</span>
-                <p className="text-sm text-green-800 font-medium">
-                  参加登録済み
-                </p>
-              </>
-            ) : (
-              <>
-                <span className="text-yellow-600">×</span>
-                <p className="text-sm text-yellow-800 font-medium">
-                  まだ参加登録していません
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-        {slots.map((slot) => {
-          const isAnswered = isAlreadyAnswered(slot.id);
-          const eventDate = new Date(slot.day);
-          const joinedUsers = slot.participations.filter(
-            (p) => p.status === "○",
-          );
-          const absentUsers = slot.participations.filter(
-            (p) => p.status === "×",
-          );
-          const pendingUsers = slot.participations.filter(
-            (p) => p.status === "△",
-          );
+    <div className="space-y-4">
+      {slots.map((slot) => {
+        const isAnswered = isAlreadyAnswered(slot.id);
+        const eventDate = new Date(slot.day);
+        const joinedUsers = slot.participations.filter((p) => p.status === "○");
+        const absentUsers = slot.participations.filter((p) => p.status === "×");
+        const pendingUsers = slot.participations.filter(
+          (p) => p.status === "△",
+        );
 
-          return (
-            <div
-              key={slot.id}
-              className={`rounded-2xl overflow-hidden border ${
-                isAnswered
-                  ? "border-red-200 bg-red-50/40"
-                  : "border-gray-200 bg-white"
-              }`}
-            >
-              <div className="p-4 md:p-5 space-y-4">
-                <div className="space-y-1">
-                  <p className="text-4xl font-bold tracking-tight text-gray-900">
-                    {eventDate.getMonth() + 1}/{eventDate.getDate()}（
-                    {eventDate.toLocaleDateString("ja-JP", {
-                      weekday: "short",
-                    })}
-                    ）
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {slot.start_at} - {slot.end_at}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  {statusOptions.map((option) => {
-                    const isActive = participations[slot.id] === option.value;
-                    return (
-                      <Button
-                        key={option.value}
-                        type="button"
-                        variant="outline"
-                        onClick={() =>
-                          updateParticipation(slot.id, option.value)
-                        }
-                        disabled={isSubmitting}
-                        className={`h-11 rounded-full text-base border ${
-                          isActive
-                            ? option.activeClass
-                            : "bg-gray-100 text-gray-600 border-gray-100 hover:bg-gray-200"
-                        }`}
-                      >
-                        {isActive ? "✓ " : ""}
-                        {option.label}
-                      </Button>
-                    );
+        return (
+          <div
+            key={slot.id}
+            className={`rounded-2xl overflow-hidden border ${
+              isAnswered
+                ? "border-red-200 bg-red-50/40"
+                : "border-gray-200 bg-white"
+            }`}
+          >
+            <div className="p-4 md:p-5 space-y-4">
+              <div className="space-y-1">
+                <p className="text-3xl font-bold tracking-tight text-gray-900">
+                  {eventDate.getMonth() + 1}/{eventDate.getDate()}（
+                  {eventDate.toLocaleDateString("ja-JP", {
+                    weekday: "short",
                   })}
-                </div>
-
-                {getError(`slot_${slot.id}`) && (
-                  <p className="text-xs text-red-500">
-                    {getError(`slot_${slot.id}`)}
-                  </p>
-                )}
-
-                <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleCommentInput(slot.id)}
-                    disabled={isSubmitting}
-                    className="text-xs text-gray-500 hover:text-gray-700"
-                  >
-                    {showCommentInput[slot.id]
-                      ? "コメントを閉じる"
-                      : "コメントを追加"}
-                  </Button>
-                </div>
-
-                {showCommentInput[slot.id] && (
-                  <div className="border-t pt-3">
-                    <Textarea
-                      placeholder="コメントを入力してください（任意）"
-                      value={comments[slot.id] || ""}
-                      onChange={(e) => updateComment(slot.id, e.target.value)}
-                      disabled={isSubmitting}
-                      className="min-h-[80px] text-sm bg-white"
-                    />
-                  </div>
-                )}
+                  ）
+                </p>
+                <p className="text-xs text-gray-500">
+                  {slot.start_at} - {slot.end_at}
+                </p>
               </div>
 
-              <div className="bg-white border-t p-4 space-y-5">
-                {[
-                  { status: "○" as const, users: joinedUsers },
-                  { status: "×" as const, users: absentUsers },
-                  { status: "△" as const, users: pendingUsers },
-                ].map((group) => (
-                  <div key={`${slot.id}-${group.status}`} className="space-y-2">
-                    <p className="text-2xl font-semibold text-gray-900">
-                      {statusLabelMap[group.status]} {group.users.length}
-                    </p>
-                    {group.users.length > 0 ? (
-                      <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
-                        {group.users.map((participation) => (
-                          <div
-                            key={participation.id}
-                            className="flex flex-col items-center text-center gap-1"
-                          >
-                            <Avatar className="h-12 w-12">
-                              <AvatarFallback className="bg-gray-200 text-gray-700">
-                                {(participation.userName || "?").slice(0, 1)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-xs text-gray-700 line-clamp-2">
-                              {participation.userName || "不明"}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-400">
-                        まだ回答はありません
-                      </p>
-                    )}
-                  </div>
-                ))}
+              <div className="grid grid-cols-3 gap-2">
+                {statusOptions.map((option) => {
+                  const isActive = participations[slot.id] === option.value;
+                  return (
+                    <Button
+                      key={option.value}
+                      type="button"
+                      variant="outline"
+                      onClick={() => updateParticipation(slot.id, option.value)}
+                      disabled={savingSlotId === slot.id}
+                      className={`h-10 rounded-full text-sm border ${
+                        isActive
+                          ? option.activeClass
+                          : "bg-gray-100 text-gray-600 border-gray-100 hover:bg-gray-200"
+                      }`}
+                    >
+                      {isActive ? "✓ " : ""}
+                      {option.label}
+                    </Button>
+                  );
+                })}
               </div>
+
+              {getError(`slot_${slot.id}`) && (
+                <p className="text-xs text-red-500">
+                  {getError(`slot_${slot.id}`)}
+                </p>
+              )}
+
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleCommentInput(slot.id)}
+                  disabled={savingSlotId === slot.id}
+                  className="text-xs text-gray-500 hover:text-gray-700"
+                >
+                  {showCommentInput[slot.id]
+                    ? "コメントを閉じる"
+                    : "コメントを追加"}
+                </Button>
+              </div>
+
+              {showCommentInput[slot.id] && (
+                <div className="border-t pt-3">
+                  <Textarea
+                    placeholder="コメントを入力してください（任意）"
+                    value={comments[slot.id] || ""}
+                    onChange={(e) => updateComment(slot.id, e.target.value)}
+                    onBlur={() => handleCommentBlur(slot.id)}
+                    disabled={savingSlotId === slot.id}
+                    className="min-h-[80px] text-sm bg-white"
+                  />
+                </div>
+              )}
             </div>
-          );
-        })}
 
-        <Button
-          onClick={handleParticipation}
-          disabled={isSubmitting}
-          className={`w-full ${
-            answeredSlotsCount === slots.length
-              ? "bg-blue-500 hover:bg-blue-600"
-              : "bg-green-500 hover:bg-green-600"
-          } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
-        >
-          {isSubmitting
-            ? "保存中..."
-            : answeredSlotsCount === slots.length
-              ? "回答を更新"
-              : "参加状況を保存"}
-        </Button>
-      </div>
-    </>
+            <div className="bg-white border-t p-4 space-y-5">
+              {[
+                { status: "○" as const, users: joinedUsers },
+                { status: "×" as const, users: absentUsers },
+                { status: "△" as const, users: pendingUsers },
+              ].map((group) => (
+                <div key={`${slot.id}-${group.status}`} className="space-y-2">
+                  <p className="text-xl font-semibold text-gray-900">
+                    {statusLabelMap[group.status]} {group.users.length}
+                  </p>
+                  {group.users.length > 0 ? (
+                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+                      {group.users.map((participation) => (
+                        <div
+                          key={participation.id}
+                          className="flex flex-col items-center text-center gap-1"
+                        >
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback className="bg-gray-200 text-gray-700">
+                              {(participation.userName || "?").slice(0, 1)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs text-gray-700 line-clamp-2">
+                            {participation.userName || "不明"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400">
+                      まだ回答はありません
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }

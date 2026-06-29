@@ -2,6 +2,14 @@ import NextAuth, { type NextAuthOptions } from "next-auth";
 import LineProvider from "next-auth/providers/line";
 import { prisma } from "@/lib/prisma";
 
+const getProfilePictureUrl = (profile: unknown): string | null => {
+  if (!profile || typeof profile !== "object") {
+    return null;
+  }
+  const profileWithPicture = profile as { picture?: string };
+  return profileWithPicture.picture ?? null;
+};
+
 export const authOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === "development", // 開発時のみデバッグログを有効化
   providers: [
@@ -20,15 +28,18 @@ export const authOptions: NextAuthOptions = {
     async signIn({ account, profile }) {
       // 初回サインイン時にデータベースにユーザー情報を保存
       if (account?.provider === "line" && profile) {
+        const pictureUrl = getProfilePictureUrl(profile);
         try {
           await prisma.user.upsert({
             where: { id: profile.sub as string },
             update: {
               name: profile.name as string,
+              pictureUrl,
             },
             create: {
               id: profile.sub as string,
               name: profile.name as string,
+              pictureUrl,
               isFriendAdded: false, // 新規ユーザーは友達追加未完了
             },
           });

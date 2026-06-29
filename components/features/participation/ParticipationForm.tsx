@@ -7,7 +7,7 @@ import {
   type ParticipationStatus,
   participationEvent,
 } from "@/app/actions/event/participationEvent";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { Participation, Slot } from "@/types/event";
@@ -332,6 +332,10 @@ export default function ParticipationForm({
                           className="flex flex-col items-center text-center gap-1"
                         >
                           <Avatar className="h-10 w-10">
+                            <AvatarImage
+                              src={participation.userPictureUrl || undefined}
+                              alt={participation.userName || "ユーザー"}
+                            />
                             <AvatarFallback className="bg-gray-200 text-gray-700">
                               {(participation.userName || "?").slice(0, 1)}
                             </AvatarFallback>

@@ -11,6 +11,7 @@ datasource db {
 model User {
   id        String   @id
   name      String?
+  pictureUrl String? @map("picture_url")
   createdAt DateTime @default(now()) @map("created_at")
   isFriendAdded Boolean @default(false) @map("is_friend_added")
   events    Event[]

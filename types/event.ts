@@ -4,6 +4,7 @@ export interface Participation {
   id: number;
   userId: string;
   userName: string | null;
+  userPictureUrl?: string | null;
   status: string;
   comment: string | null;
   createdAt: string;

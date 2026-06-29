@@ -9,6 +9,7 @@ export interface Participation {
   id: number;
   userId: string;
   userName: string | null;
+  userPictureUrl?: string | null;
   status: string;
   comment: string | null;
   createdAt: string;
@@ -71,6 +72,7 @@ export async function getMyEvent(): Promise<Event[]> {
               user: {
                 select: {
                   name: true,
+                  pictureUrl: true,
                 },
               },
             },
@@ -101,6 +103,7 @@ export async function getMyEvent(): Promise<Event[]> {
         id: participation.id,
         userId: participation.userId,
         userName: participation.user.name,
+        userPictureUrl: participation.user.pictureUrl,
         comment: participation.comment,
         status: participation.status,
         createdAt: participation.createdAt.toISOString(),

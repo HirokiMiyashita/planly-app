@@ -13,8 +13,7 @@ export const useAuth = () => {
     setIsLineBrowser(isLine);
   }, []);
 
-  const handleSignIn = (provider: "line" | "guest" = "line") =>
-    signIn(provider, { callbackUrl: "/" });
+  const handleSignIn = () => signIn("line", { callbackUrl: "/" });
   const handleSignOut = () => signOut();
 
   return {

@@ -27,6 +27,9 @@ export default function ParticipationForm({
 }: ParticipationFormProps) {
   const router = useRouter();
   const [savingSlotId, setSavingSlotId] = useState<number | null>(null);
+  const [selectedCommentSlot, setSelectedCommentSlot] = useState<Slot | null>(
+    null,
+  );
 
   // 各スロットの参加状況を管理（既存の参加状況を初期値として設定）
   const [participations, setParticipations] = useState<
@@ -167,6 +170,14 @@ export default function ParticipationForm({
     );
   };
 
+  const handleShowComments = (slot: Slot) => {
+    setSelectedCommentSlot(slot);
+  };
+
+  const handleCloseCommentModal = () => {
+    setSelectedCommentSlot(null);
+  };
+
   const statusOptions: Array<{
     value: Exclude<LocalParticipationStatus, null>;
     label: string;
@@ -291,6 +302,19 @@ export default function ParticipationForm({
             </div>
 
             <div className="bg-white border-t p-4 space-y-5">
+              {slot.participations.some((p) => p.comment) && (
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="text-xs"
+                    onClick={() => handleShowComments(slot)}
+                  >
+                    コメント表示
+                  </Button>
+                </div>
+              )}
               {[
                 { status: "○" as const, users: joinedUsers },
                 { status: "×" as const, users: absentUsers },
@@ -329,6 +353,66 @@ export default function ParticipationForm({
           </div>
         );
       })}
+
+      {selectedCommentSlot && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-5 w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-base font-semibold">コメント一覧</h3>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCloseCommentModal}
+              >
+                閉じる
+              </Button>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">
+              {new Date(selectedCommentSlot.day).toLocaleDateString("ja-JP", {
+                month: "short",
+                day: "numeric",
+                weekday: "short",
+              })}{" "}
+              {selectedCommentSlot.start_at} - {selectedCommentSlot.end_at}
+            </p>
+
+            <div className="space-y-3">
+              {selectedCommentSlot.participations
+                .filter((p) => p.comment)
+                .map((participation) => (
+                  <div key={participation.id} className="border rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span
+                        className={`text-xs px-2 py-1 rounded ${
+                          participation.status === "○"
+                            ? "bg-green-100 text-green-800"
+                            : participation.status === "△"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {participation.userName || "不明"}{" "}
+                        {participation.status}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded">
+                      {participation.comment}
+                    </p>
+                  </div>
+                ))}
+
+              {selectedCommentSlot.participations.filter((p) => p.comment)
+                .length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  コメントはありません
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

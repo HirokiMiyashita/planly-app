@@ -10,6 +10,7 @@ declare module "next-auth" {
       lineUserId: string;
       lineUserName: string;
       isFriendAdded: boolean;
+      requiresReauthentication: boolean;
       image: string;
     } & DefaultSession["user"];
   }

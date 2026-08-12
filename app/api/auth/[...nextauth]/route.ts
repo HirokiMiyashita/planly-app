@@ -46,7 +46,7 @@ export const authOptions: NextAuthOptions = {
           // User saved to database
         } catch (error) {
           console.error("Database error during sign in:", error);
-          // データベースエラーでもサインインは続行
+          return false;
         }
       }
       return true;
@@ -83,30 +83,36 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       // セッションにLINEユーザー情報を追加
       let isFriendAdded = token.isFriendAdded;
+      let userExists: boolean | null = null;
+      const lineUserId =
+        typeof token.lineUserId === "string" ? token.lineUserId : "";
 
       // 毎回データベースから最新の友達追加状況を取得
-      if (token.lineUserId) {
+      if (lineUserId) {
         try {
           const user = await prisma.user.findUnique({
-            where: { id: token.lineUserId as string },
+            where: { id: lineUserId },
             select: { isFriendAdded: true },
           });
+          userExists = user !== null;
           isFriendAdded = user?.isFriendAdded || false;
         } catch (error) {
           console.error("Error fetching friend status in session:", error);
         }
       }
 
+      const requiresReauthentication =
+        !lineUserId || lineUserId.startsWith("guest_") || userExists === false;
+
       return {
         ...session,
         user: {
           ...session.user,
-          id:
-            (token.lineUserId as string | undefined) ??
-            (typeof token.sub === "string" ? token.sub : ""),
-          lineUserId: token.lineUserId,
+          id: lineUserId,
+          lineUserId,
           lineUserName: token.lineUserName,
           isFriendAdded: isFriendAdded,
+          requiresReauthentication,
         },
       };
     },

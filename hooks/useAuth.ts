@@ -14,6 +14,7 @@ export const useAuth = () => {
   }, []);
 
   const handleSignIn = () => signIn("line", { callbackUrl: "/" });
+  const handleLocalSignIn = () => signIn("local-guest", { callbackUrl: "/" });
   const handleSignOut = () => signOut();
 
   return {
@@ -23,6 +24,8 @@ export const useAuth = () => {
     isAuthenticated: !!session,
     isLoading: status === "loading",
     signIn: handleSignIn,
+    localSignIn: handleLocalSignIn,
+    isLocalGuestLogin: process.env.NEXT_PUBLIC_LOCAL_GUEST_LOGIN === "true",
     signOut: handleSignOut,
   };
 };

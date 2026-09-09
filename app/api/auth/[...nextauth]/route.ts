@@ -1,6 +1,10 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 import LineProvider from "next-auth/providers/line";
 import { prisma } from "@/lib/prisma";
+
+const localGuestEnabled = process.env.LOCAL_GUEST_LOGIN === "true";
+const localGuestId = "local_dev_user";
 
 const getProfilePictureUrl = (profile: unknown): string | null => {
   if (!profile || typeof profile !== "object") {
@@ -22,10 +26,28 @@ export const authOptions: NextAuthOptions = {
         },
       },
     }),
+    ...(localGuestEnabled
+      ? [
+          CredentialsProvider({
+            id: "local-guest",
+            name: "ローカルゲスト",
+            credentials: {},
+            async authorize() {
+              return {
+                id: localGuestId,
+                name: "ローカルユーザー",
+                lineUserId: localGuestId,
+                lineUserName: "ローカルユーザー",
+                isFriendAdded: false,
+              };
+            },
+          }),
+        ]
+      : []),
   ],
 
   callbacks: {
-    async signIn({ account, profile }) {
+    async signIn({ account, profile, user }) {
       // 初回サインイン時にデータベースにユーザー情報を保存
       if (account?.provider === "line" && profile) {
         const pictureUrl = getProfilePictureUrl(profile);
@@ -49,9 +71,20 @@ export const authOptions: NextAuthOptions = {
           return false;
         }
       }
+      if (account?.provider === "local-guest" && user) {
+        await prisma.user.upsert({
+          where: { id: localGuestId },
+          update: { name: "ローカルユーザー" },
+          create: {
+            id: localGuestId,
+            name: "ローカルユーザー",
+            isFriendAdded: false,
+          },
+        });
+      }
       return true;
     },
-    async jwt({ token, account, profile }) {
+    async jwt({ token, account, profile, user }) {
       // 初回サインイン時にユーザー情報を保存
       if (account && profile) {
         token.lineUserId = profile.sub as string;
@@ -68,6 +101,11 @@ export const authOptions: NextAuthOptions = {
           console.error("Error fetching friend status:", error);
           token.isFriendAdded = false;
         }
+      }
+      if (account?.provider === "local-guest" && user) {
+        token.lineUserId = localGuestId;
+        token.lineUserName = "ローカルユーザー";
+        token.isFriendAdded = false;
       }
 
       // 初回コールバック以降でもIDを欠損させない

@@ -18,6 +18,7 @@ model User {
   isFriendAdded Boolean @default(false) @map("is_friend_added")
 
   events    Event[]
+  eventGroups EventGroup[]
   participations EventParticipation[]
 
   @@map("users")
@@ -32,14 +33,32 @@ model Event {
   isConfirmed Boolean  @default(false) @map("is_confirmed")
   confirmedAt DateTime? @map("confirmed_at")
   confirmedSlotId Int? @map("confirmed_slot_id")
+  groupId     String? @map("group_id")
 
   user        User     @relation(fields: [createdBy], references: [id])
+  group       EventGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
   slots       EventSlot[]
   participations EventParticipation[]
   confirmedSlot EventSlot? @relation("ConfirmedSlot", fields: [confirmedSlotId], references: [id])
 
   @@index([createdBy, createdAt])
+  @@index([groupId])
   @@map("events")
+}
+
+model EventGroup {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  createdBy   String   @map("created_by")
+  inviteToken String   @unique @map("invite_token")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user   User @relation(fields: [createdBy], references: [id])
+  events Event[]
+
+  @@index([createdBy, createdAt])
+  @@map("event_groups")
 }
 
 model EventSlot {

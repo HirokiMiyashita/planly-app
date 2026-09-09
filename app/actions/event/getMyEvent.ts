@@ -34,60 +34,90 @@ export interface Event {
   slots: Slot[];
 }
 
-export async function getMyEvent(): Promise<Event[]> {
+export interface EventGroup {
+  id: string;
+  title: string;
+  description: string | null;
+  created_at: string;
+  inviteToken: string;
+  events: Event[];
+}
+
+export async function getMyEvent(): Promise<{
+  groups: EventGroup[];
+  events: Event[];
+}> {
   const session = await getServerSession(authOptions);
 
   // セッションからlineUserIdを取得
   const lineUserId = session?.user?.lineUserId;
   if (!lineUserId) {
-    return [];
+    return { groups: [], events: [] };
   }
 
-  // Prismaを使用してイベントとスロット、参加状況を取得（最適化）
-  const events = await prisma.event.findMany({
-    where: {
-      createdBy: lineUserId,
-    },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      createdAt: true,
-      isConfirmed: true,
-      confirmedSlotId: true,
-      slots: {
-        select: {
-          id: true,
-          day: true,
-          startAt: true,
-          endAt: true,
-          participations: {
-            select: {
-              id: true,
-              userId: true,
-              status: true,
-              comment: true,
-              createdAt: true,
-              updatedAt: true,
-              user: {
-                select: {
-                  name: true,
-                  pictureUrl: true,
-                },
+  const eventSelection = {
+    id: true,
+    title: true,
+    description: true,
+    createdAt: true,
+    isConfirmed: true,
+    confirmedSlotId: true,
+    slots: {
+      select: {
+        id: true,
+        day: true,
+        startAt: true,
+        endAt: true,
+        participations: {
+          select: {
+            id: true,
+            userId: true,
+            status: true,
+            comment: true,
+            createdAt: true,
+            updatedAt: true,
+            user: {
+              select: {
+                name: true,
+                pictureUrl: true,
               },
             },
           },
         },
-        orderBy: [{ day: "asc" }, { startAt: "asc" }],
       },
+      orderBy: [{ day: "asc" as const }, { startAt: "asc" as const }],
     },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  };
 
-  // データを整形
-  return events.map((event) => ({
+  const [groups, events] = await Promise.all([
+    prisma.eventGroup.findMany({
+      where: { createdBy: lineUserId },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        createdAt: true,
+        inviteToken: true,
+        events: {
+          select: eventSelection,
+          orderBy: { createdAt: "asc" },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.event.findMany({
+      where: {
+        createdBy: lineUserId,
+        groupId: null,
+      },
+      select: eventSelection,
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+  ]);
+
+  const formatEvent = (event: (typeof events)[number]): Event => ({
     id: event.id,
     title: event.title,
     description: event.description,
@@ -110,5 +140,17 @@ export async function getMyEvent(): Promise<Event[]> {
         updatedAt: participation.updatedAt.toISOString(),
       })),
     })),
-  }));
+  });
+
+  return {
+    groups: groups.map((group) => ({
+      id: group.id,
+      title: group.title,
+      description: group.description,
+      created_at: group.createdAt.toISOString(),
+      inviteToken: group.inviteToken,
+      events: group.events.map((event) => formatEvent(event)),
+    })),
+    events: events.map(formatEvent),
+  };
 }

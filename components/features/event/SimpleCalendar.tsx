@@ -12,32 +12,54 @@ export default function SimpleCalendar({
   onDateSelect,
   disabled = false,
 }: SimpleCalendarProps) {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const getJstDateParts = () => {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+    }).formatToParts(new Date());
+    const value = (type: "year" | "month" | "day") =>
+      Number(parts.find((part) => part.type === type)?.value);
+    return {
+      year: value("year"),
+      month: value("month") - 1,
+      day: value("day"),
+    };
+  };
 
-  // 日本時間（JST）に調整（UTC+9時間）
-  const now = new Date();
-  const today = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
+  const toDateKey = (year: number, month: number, day: number) =>
+    `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(
+      2,
+      "0",
+    )}`;
+
+  const [currentDate, setCurrentDate] = useState(() => {
+    const today = getJstDateParts();
+    return new Date(Date.UTC(today.year, today.month, 1));
+  });
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  const today = getJstDateParts();
+  const todayKey = toDateKey(today.year, today.month, today.day);
+  const year = currentDate.getUTCFullYear();
+  const month = currentDate.getUTCMonth();
 
   // 月の最初の日と最後の日を取得
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const firstDayOfWeek = firstDay.getDay(); // 0 = 日曜日
-  const daysInMonth = lastDay.getDate();
+  const firstDayOfWeek = new Date(Date.UTC(year, month, 1)).getUTCDay();
+  const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 
   // カレンダーの日付配列を生成
-  const calendarDays = [];
+  const calendarDays: number[] = [];
 
   // 前月の日付（空白部分）
   for (let i = 0; i < firstDayOfWeek; i++) {
-    calendarDays.push(null);
+    calendarDays.push(-(i + 1));
   }
 
   // 今月の日付
   for (let day = 1; day <= daysInMonth; day++) {
-    calendarDays.push(new Date(year, month, day));
+    calendarDays.push(day);
   }
 
   const monthNames = [
@@ -58,47 +80,23 @@ export default function SimpleCalendar({
   const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
 
   const goToPreviousMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
+    setCurrentDate(new Date(Date.UTC(year, month - 1, 1)));
   };
 
   const goToNextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
+    setCurrentDate(new Date(Date.UTC(year, month + 1, 1)));
   };
 
-  const handleDateClick = (date: Date) => {
-    setSelectedDate(date);
-    // 日本時間（JST）で日付を取得
-    const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-    onDateSelect(jstDate.toISOString().split("T")[0]);
+  const handleDateClick = (day: number) => {
+    const dateKey = toDateKey(year, month, day);
+    setSelectedDate(dateKey);
+    onDateSelect(dateKey);
   };
 
-  const isToday = (date: Date) => {
-    // 日付のみを比較（時刻を無視）
-    return (
-      date.getFullYear() === today.getFullYear() &&
-      date.getMonth() === today.getMonth() &&
-      date.getDate() === today.getDate()
-    );
-  };
-
-  const isSelected = (date: Date) => {
-    return selectedDate && date.toDateString() === selectedDate.toDateString();
-  };
-
-  const isPast = (date: Date) => {
-    // 日付のみを比較（時刻を無視）
-    const todayDateOnly = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-    );
-    const dateOnly = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-    );
-    return dateOnly < todayDateOnly;
-  };
+  const isToday = (day: number) => toDateKey(year, month, day) === todayKey;
+  const isSelected = (day: number) =>
+    toDateKey(year, month, day) === selectedDate;
+  const isPast = (day: number) => toDateKey(year, month, day) < todayKey;
 
   return (
     <div className="bg-white border rounded-lg p-4 shadow-sm">
@@ -141,20 +139,23 @@ export default function SimpleCalendar({
 
       {/* カレンダーグリッド */}
       <div className="grid grid-cols-7 gap-1">
-        {calendarDays.map((date, _index) => {
-          if (!date) {
-            return <div key={date} className="h-10" />;
+        {calendarDays.map((day) => {
+          if (day < 0) {
+            return (
+              <div key={`blank-${year}-${month}-${day}`} className="h-10" />
+            );
           }
 
-          const isTodayDate = isToday(date);
-          const isSelectedDate = isSelected(date);
-          const isPastDate = isPast(date);
+          const dateKey = toDateKey(year, month, day);
+          const isTodayDate = isToday(day);
+          const isSelectedDate = isSelected(day);
+          const isPastDate = isPast(day);
 
           return (
             <button
               type="button"
-              key={date.toISOString()}
-              onClick={() => handleDateClick(date)}
+              key={dateKey}
+              onClick={() => handleDateClick(day)}
               disabled={disabled || isPastDate}
               className={`
                 h-10 text-sm rounded-md transition-colors
@@ -169,7 +170,7 @@ export default function SimpleCalendar({
                 }
               `}
             >
-              {date.getDate()}
+              {day}
             </button>
           );
         })}
@@ -180,12 +181,16 @@ export default function SimpleCalendar({
         <div className="mt-4 p-3 bg-blue-50 rounded-lg">
           <p className="text-sm text-blue-800">
             選択された日付:{" "}
-            {selectedDate.toLocaleDateString("ja-JP", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-              weekday: "long",
-            })}
+            {new Date(`${selectedDate}T00:00:00+09:00`).toLocaleDateString(
+              "ja-JP",
+              {
+                timeZone: "Asia/Tokyo",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                weekday: "long",
+              },
+            )}
           </p>
         </div>
       )}

@@ -9,7 +9,14 @@ interface AuthProps {
 }
 
 export default function Auth({ children }: AuthProps) {
-  const { user, isLoading, signIn, isLineBrowser } = useAuth();
+  const {
+    user,
+    isLoading,
+    signIn,
+    localSignIn,
+    isLocalGuestLogin,
+    isLineBrowser,
+  } = useAuth();
 
   // ローディング中の表示
   if (isLoading) {
@@ -37,6 +44,11 @@ export default function Auth({ children }: AuthProps) {
           <Button onClick={signIn} className="w-full">
             LINEでログイン
           </Button>
+          {isLocalGuestLogin && (
+            <Button onClick={localSignIn} variant="outline" className="w-full">
+              ローカルユーザーでログイン
+            </Button>
+          )}
         </div>
       </div>
     );

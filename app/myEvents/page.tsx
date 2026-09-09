@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Auth from "@/components/features/auth/Auth";
 import Header from "@/components/features/auth/Header";
 import EventCard from "@/components/features/event/EventCard";
+import EventGroupCard from "@/components/features/event/EventGroupCard";
 import { getMyEvent } from "../actions/event/getMyEvent";
 
 function LoadingSkeleton() {
@@ -27,9 +28,9 @@ function LoadingSkeleton() {
 }
 
 async function EventList() {
-  const events = await getMyEvent();
+  const { groups, events } = await getMyEvent();
 
-  if (events.length === 0) {
+  if (groups.length === 0 && events.length === 0) {
     return (
       <div className="px-4 py-6 pb-20">
         <div className="text-center text-gray-500">
@@ -41,6 +42,9 @@ async function EventList() {
 
   return (
     <div className="px-4 py-6 space-y-4 pb-20">
+      {groups.map((group) => (
+        <EventGroupCard key={group.id} group={group} />
+      ))}
       {events.map((event) => (
         <EventCard key={event.id} event={event} isCreator={true} />
       ))}

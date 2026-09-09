@@ -18,28 +18,25 @@ export default function CandidateDateSelector({
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showTimeSelector, setShowTimeSelector] = useState(false);
 
-  const getToday = () => {
-    // 日本時間（JST）に調整
-    const now = new Date();
-    const jstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-    return jstDate.toISOString().split("T")[0];
+  const getJstDate = (offsetDays: number) => {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+    }).formatToParts(new Date());
+    const value = (type: "year" | "month" | "day") =>
+      Number(parts.find((part) => part.type === type)?.value);
+    return new Date(
+      Date.UTC(value("year"), value("month") - 1, value("day") + offsetDays),
+    )
+      .toISOString()
+      .split("T")[0];
   };
 
-  const getTomorrow = () => {
-    // 日本時間（JST）に調整
-    const now = new Date();
-    const jstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-    jstDate.setDate(jstDate.getDate() + 1);
-    return jstDate.toISOString().split("T")[0];
-  };
-
-  const getNextWeek = () => {
-    // 日本時間（JST）に調整
-    const now = new Date();
-    const jstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-    jstDate.setDate(jstDate.getDate() + 7);
-    return jstDate.toISOString().split("T")[0];
-  };
+  const getToday = () => getJstDate(0);
+  const getTomorrow = () => getJstDate(1);
+  const getNextWeek = () => getJstDate(7);
 
   const handleDateSelect = (date: string) => {
     setSelectedDate(date);

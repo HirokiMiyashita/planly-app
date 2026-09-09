@@ -39,7 +39,7 @@ export async function deleteEvent(eventId: string) {
     // イベントが存在するかチェック
     const event = await prisma.event.findUnique({
       where: { id: parseInt(eventId, 10) },
-      select: { id: true, createdBy: true },
+      select: { id: true, createdBy: true, groupId: true },
     });
 
     if (!event) {
@@ -54,9 +54,21 @@ export async function deleteEvent(eventId: string) {
       };
     }
 
-    // イベントと関連するスロット、参加状況を削除
-    await prisma.event.delete({
-      where: { id: parseInt(eventId, 10) },
+    // イベントを削除し、空になったグループも同じトランザクションで削除
+    await prisma.$transaction(async (tx) => {
+      await tx.event.delete({
+        where: { id: event.id },
+      });
+
+      if (event.groupId) {
+        await tx.eventGroup.deleteMany({
+          where: {
+            id: event.groupId,
+            createdBy: lineUserId,
+            events: { none: {} },
+          },
+        });
+      }
     });
 
     // ページを再検証
@@ -69,6 +81,56 @@ export async function deleteEvent(eventId: string) {
     };
   } catch (error) {
     console.error("Delete Event error:", error);
+    return {
+      success: false,
+      message: "サーバーエラーが発生しました",
+    };
+  }
+}
+
+export async function deleteEventGroup(groupId: string) {
+  try {
+    const session = await getServerSession(authOptions);
+    const lineUserId = session?.user?.lineUserId;
+
+    if (!lineUserId) {
+      return { success: false, message: "ログインが必要です" };
+    }
+
+    const group = await prisma.eventGroup.findUnique({
+      where: { id: groupId },
+      select: { id: true, createdBy: true },
+    });
+
+    if (!group) {
+      return { success: false, message: "イベントグループが見つかりません" };
+    }
+
+    if (group.createdBy !== lineUserId) {
+      return {
+        success: false,
+        message: "このイベントグループを削除する権限がありません",
+      };
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.event.deleteMany({
+        where: { groupId: group.id },
+      });
+      await tx.eventGroup.delete({
+        where: { id: group.id },
+      });
+    });
+
+    revalidatePath("/");
+    revalidatePath("/myEvents");
+
+    return {
+      success: true,
+      message: "イベントグループを削除しました",
+    };
+  } catch (error) {
+    console.error("Delete Event Group error:", error);
     return {
       success: false,
       message: "サーバーエラーが発生しました",

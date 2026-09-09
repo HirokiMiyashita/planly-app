@@ -44,10 +44,33 @@ export async function getEventGroup(token: string) {
     return null;
   }
 
+  const sortedEvents = [...group.events].sort((a, b) => {
+    const aSlot = a.slots[0];
+    const bSlot = b.slots[0];
+    if (!aSlot && !bSlot) {
+      return a.createdAt.getTime() - b.createdAt.getTime();
+    }
+    if (!aSlot) {
+      return 1;
+    }
+    if (!bSlot) {
+      return -1;
+    }
+    const dayDiff = aSlot.day.getTime() - bSlot.day.getTime();
+    if (dayDiff !== 0) {
+      return dayDiff;
+    }
+    const startDiff = aSlot.startAt.localeCompare(bSlot.startAt);
+    if (startDiff !== 0) {
+      return startDiff;
+    }
+    return a.createdAt.getTime() - b.createdAt.getTime();
+  });
+
   return {
     title: group.title,
     description: group.description,
-    events: group.events.map((event) => ({
+    events: sortedEvents.map((event) => ({
       id: event.id,
       title: event.title,
       description: event.description,

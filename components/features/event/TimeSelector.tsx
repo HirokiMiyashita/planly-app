@@ -41,7 +41,7 @@ export default function TimeSelector({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <h3 className="text-lg font-semibold">時間を設定</h3>
         <p className="text-[12px] text-gray-500 mt-1 mb-4">

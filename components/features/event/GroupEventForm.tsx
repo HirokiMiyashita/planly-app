@@ -1,7 +1,8 @@
 "use client";
 
-import { ChevronDown, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { CheckCircle2, Pencil, Plus, Trash2, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -191,6 +192,39 @@ export function GroupEventFields({
   );
 }
 
+function useKeyboardInset() {
+  const [inset, setInset] = useState(0);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) {
+      return;
+    }
+
+    const update = () => {
+      setInset(
+        Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop),
+      );
+    };
+
+    viewport.addEventListener("resize", update);
+    viewport.addEventListener("scroll", update);
+    update();
+
+    return () => {
+      viewport.removeEventListener("resize", update);
+      viewport.removeEventListener("scroll", update);
+    };
+  }, []);
+
+  return inset;
+}
+
+const isEventComplete = (event: GroupEvent) =>
+  event.title.trim() !== "" &&
+  event.candidateDates.length > 0 &&
+  event.candidateDates.every((slot) => slot.date);
+
 export function GroupEventsFields({
   events,
   onEventChange,
@@ -202,9 +236,56 @@ export function GroupEventsFields({
   onAddEvent: () => GroupEvent;
   onRemoveEvent: (index: number) => void;
 }) {
-  const [expandedEventId, setExpandedEventId] = useState<string | undefined>(
-    events[0]?.id,
-  );
+  const keyboardInset = useKeyboardInset();
+  const [mounted, setMounted] = useState(false);
+  const [editing, setEditing] = useState<{
+    index: number;
+    event: GroupEvent;
+    isNew: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!editing) {
+      return;
+    }
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [editing]);
+
+  const openEditor = (event: GroupEvent, index: number, isNew = false) => {
+    setEditing({
+      index,
+      isNew,
+      event: {
+        ...event,
+        candidateDates: event.candidateDates.map((candidate) => ({
+          ...candidate,
+        })),
+      },
+    });
+  };
+
+  const closeEditor = () => {
+    if (editing?.isNew) {
+      onRemoveEvent(editing.index);
+    }
+    setEditing(null);
+  };
+
+  const saveAndClose = () => {
+    if (!editing || !isEventComplete(editing.event)) {
+      return;
+    }
+    onEventChange(editing.index, editing.event);
+    setEditing(null);
+  };
 
   return (
     <div className="space-y-4">
@@ -218,73 +299,60 @@ export function GroupEventsFields({
       </div>
 
       <div className="space-y-3">
-        {events.map((event, index) => {
-          const isExpanded = expandedEventId === event.id;
-          return (
-            <section
-              key={event.id}
-              className="overflow-hidden rounded-xl border bg-white shadow-sm"
+        {events.map((event, index) => (
+          <section
+            key={event.id}
+            className="flex items-center gap-3 rounded-xl border bg-white p-4 shadow-sm"
+          >
+            <span
+              className={`flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
+                isEventComplete(event)
+                  ? "bg-green-100 text-green-700"
+                  : "bg-blue-50 text-blue-700"
+              }`}
             >
-              <button
-                type="button"
-                onClick={() =>
-                  setExpandedEventId(isExpanded ? undefined : event.id)
-                }
-                className="flex w-full items-center gap-3 p-4 text-left"
-              >
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold text-blue-700">
-                  {index + 1}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">
-                    {event.title || `イベント ${index + 1}`}
-                  </span>
-                  <span className="mt-0.5 block text-xs text-gray-500">
-                    候補日時 {event.candidateDates.length}件
-                  </span>
-                </span>
-                <ChevronDown
-                  className={`size-4 text-gray-400 transition-transform ${
-                    isExpanded ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {isExpanded && (
-                <div className="space-y-4 border-t p-4">
-                  {events.length > 2 && (
-                    <div className="flex justify-end">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          onRemoveEvent(index);
-                          setExpandedEventId(
-                            events.find((_, eventIndex) => eventIndex !== index)
-                              ?.id,
-                          );
-                        }}
-                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                      >
-                        <Trash2 className="size-4" />
-                        削除
-                      </Button>
-                    </div>
-                  )}
-                  <GroupEventFields
-                    event={event}
-                    eventNumber={index + 1}
-                    showIntro={false}
-                    onChange={(updatedEvent) =>
-                      onEventChange(index, updatedEvent)
-                    }
-                  />
-                </div>
+              {isEventComplete(event) ? (
+                <CheckCircle2 className="size-5" />
+              ) : (
+                index + 1
               )}
-            </section>
-          );
-        })}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-gray-900">
+                {event.title || `イベント ${index + 1}`}
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                {isEventComplete(event)
+                  ? `候補日時 ${event.candidateDates.length}件・入力済み`
+                  : "イベント名と候補日時を入力してください"}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center">
+              {events.length > 2 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onRemoveEvent(index)}
+                  className="text-gray-400 hover:bg-red-50 hover:text-red-600"
+                  aria-label={`イベント ${index + 1}を削除`}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => openEditor(event, index)}
+                className="text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                aria-label={`イベント ${index + 1}を編集`}
+              >
+                <Pencil className="size-4" />
+              </Button>
+            </div>
+          </section>
+        ))}
       </div>
 
       <Button
@@ -292,13 +360,88 @@ export function GroupEventsFields({
         variant="outline"
         onClick={() => {
           const addedEvent = onAddEvent();
-          setExpandedEventId(addedEvent.id);
+          openEditor(addedEvent, events.length, true);
         }}
         className="h-11 w-full border-dashed border-blue-300 text-blue-700 hover:border-blue-500 hover:bg-blue-50"
       >
         <Plus className="size-4" />
         イベントを追加
       </Button>
+
+      {mounted &&
+        editing &&
+        createPortal(
+          <div
+            className="fixed inset-x-0 top-0 z-[100] flex justify-center bg-black/40"
+            style={{ height: `calc(100dvh - ${keyboardInset}px)` }}
+          >
+            <div className="flex h-full w-full max-w-md flex-col bg-white shadow-xl">
+              <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
+                <div>
+                  <p className="text-xs font-medium text-blue-600">
+                    イベント {editing.index + 1}
+                  </p>
+                  <h3 className="mt-0.5 font-semibold text-gray-900">
+                    イベントを編集
+                  </h3>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={closeEditor}
+                  aria-label="編集画面を閉じる"
+                >
+                  <X className="size-5" />
+                </Button>
+              </div>
+
+              <div
+                className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5"
+                onFocusCapture={(event) => {
+                  const target = event.target;
+                  if (
+                    !(target instanceof HTMLInputElement) &&
+                    !(target instanceof HTMLTextAreaElement)
+                  ) {
+                    return;
+                  }
+                  window.setTimeout(() => {
+                    target.scrollIntoView({
+                      block: "center",
+                      behavior: "smooth",
+                    });
+                  }, 300);
+                }}
+              >
+                <GroupEventFields
+                  event={editing.event}
+                  eventNumber={editing.index + 1}
+                  showIntro={false}
+                  onChange={(event) =>
+                    setEditing((current) =>
+                      current ? { ...current, event } : current,
+                    )
+                  }
+                />
+              </div>
+
+              <div className="grid shrink-0 grid-cols-2 gap-2 border-t bg-white p-4">
+                <Button type="button" variant="outline" onClick={closeEditor}>
+                  キャンセル
+                </Button>
+                <Button
+                  type="button"
+                  onClick={saveAndClose}
+                  disabled={!isEventComplete(editing.event)}
+                >
+                  保存して閉じる
+                </Button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

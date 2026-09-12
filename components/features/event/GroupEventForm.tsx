@@ -220,10 +220,125 @@ function useKeyboardInset() {
   return inset;
 }
 
-const isEventComplete = (event: GroupEvent) =>
+export const isEventComplete = (event: GroupEvent) =>
   event.title.trim() !== "" &&
   event.candidateDates.length > 0 &&
   event.candidateDates.every((slot) => slot.date);
+
+export function createBlankGroupEvent(): GroupEvent {
+  return {
+    id: crypto.randomUUID(),
+    title: "",
+    description: "",
+    candidateDates: [],
+  };
+}
+
+export function GroupEventEditorModal({
+  event,
+  eventNumber,
+  title = "イベントを編集",
+  saveLabel = "保存して閉じる",
+  saving = false,
+  onChange,
+  onCancel,
+  onSave,
+}: {
+  event: GroupEvent;
+  eventNumber: number;
+  title?: string;
+  saveLabel?: string;
+  saving?: boolean;
+  onChange: (event: GroupEvent) => void;
+  onCancel: () => void;
+  onSave: () => void;
+}) {
+  const keyboardInset = useKeyboardInset();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
+  return createPortal(
+    <div
+      className="fixed inset-x-0 top-0 z-[100] flex justify-center bg-black/40"
+      style={{ height: `calc(100dvh - ${keyboardInset}px)` }}
+    >
+      <div className="flex h-full w-full max-w-md flex-col bg-white shadow-xl">
+        <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
+          <div>
+            <p className="text-xs font-medium text-blue-600">
+              イベント {eventNumber}
+            </p>
+            <h3 className="mt-0.5 font-semibold text-gray-900">{title}</h3>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onCancel}
+            aria-label="編集画面を閉じる"
+          >
+            <X className="size-5" />
+          </Button>
+        </div>
+
+        <div
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5"
+          onFocusCapture={(focusEvent) => {
+            const target = focusEvent.target;
+            if (
+              !(target instanceof HTMLInputElement) &&
+              !(target instanceof HTMLTextAreaElement)
+            ) {
+              return;
+            }
+            window.setTimeout(() => {
+              target.scrollIntoView({
+                block: "center",
+                behavior: "smooth",
+              });
+            }, 300);
+          }}
+        >
+          <GroupEventFields
+            event={event}
+            eventNumber={eventNumber}
+            showIntro={false}
+            onChange={onChange}
+          />
+        </div>
+
+        <div className="grid shrink-0 grid-cols-2 gap-2 border-t bg-white p-4">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            キャンセル
+          </Button>
+          <Button
+            type="button"
+            onClick={onSave}
+            disabled={saving || !isEventComplete(event)}
+          >
+            {saving ? "保存中..." : saveLabel}
+          </Button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
 
 export function GroupEventsFields({
   events,
@@ -236,28 +351,11 @@ export function GroupEventsFields({
   onAddEvent: () => GroupEvent;
   onRemoveEvent: (index: number) => void;
 }) {
-  const keyboardInset = useKeyboardInset();
-  const [mounted, setMounted] = useState(false);
   const [editing, setEditing] = useState<{
     index: number;
     event: GroupEvent;
     isNew: boolean;
   } | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!editing) {
-      return;
-    }
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [editing]);
 
   const openEditor = (event: GroupEvent, index: number, isNew = false) => {
     setEditing({
@@ -368,80 +466,17 @@ export function GroupEventsFields({
         イベントを追加
       </Button>
 
-      {mounted &&
-        editing &&
-        createPortal(
-          <div
-            className="fixed inset-x-0 top-0 z-[100] flex justify-center bg-black/40"
-            style={{ height: `calc(100dvh - ${keyboardInset}px)` }}
-          >
-            <div className="flex h-full w-full max-w-md flex-col bg-white shadow-xl">
-              <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
-                <div>
-                  <p className="text-xs font-medium text-blue-600">
-                    イベント {editing.index + 1}
-                  </p>
-                  <h3 className="mt-0.5 font-semibold text-gray-900">
-                    イベントを編集
-                  </h3>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={closeEditor}
-                  aria-label="編集画面を閉じる"
-                >
-                  <X className="size-5" />
-                </Button>
-              </div>
-
-              <div
-                className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5"
-                onFocusCapture={(event) => {
-                  const target = event.target;
-                  if (
-                    !(target instanceof HTMLInputElement) &&
-                    !(target instanceof HTMLTextAreaElement)
-                  ) {
-                    return;
-                  }
-                  window.setTimeout(() => {
-                    target.scrollIntoView({
-                      block: "center",
-                      behavior: "smooth",
-                    });
-                  }, 300);
-                }}
-              >
-                <GroupEventFields
-                  event={editing.event}
-                  eventNumber={editing.index + 1}
-                  showIntro={false}
-                  onChange={(event) =>
-                    setEditing((current) =>
-                      current ? { ...current, event } : current,
-                    )
-                  }
-                />
-              </div>
-
-              <div className="grid shrink-0 grid-cols-2 gap-2 border-t bg-white p-4">
-                <Button type="button" variant="outline" onClick={closeEditor}>
-                  キャンセル
-                </Button>
-                <Button
-                  type="button"
-                  onClick={saveAndClose}
-                  disabled={!isEventComplete(editing.event)}
-                >
-                  保存して閉じる
-                </Button>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
+      {editing && (
+        <GroupEventEditorModal
+          event={editing.event}
+          eventNumber={editing.index + 1}
+          onChange={(event) =>
+            setEditing((current) => (current ? { ...current, event } : current))
+          }
+          onCancel={closeEditor}
+          onSave={saveAndClose}
+        />
+      )}
     </div>
   );
 }

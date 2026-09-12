@@ -196,3 +196,93 @@ export async function createEventGroup(formData: FormData) {
     return { success: false, message: "サーバーエラーが発生しました" };
   }
 }
+
+export async function addEventToGroup(
+  groupId: string,
+  event: {
+    title: string;
+    description?: string;
+    candidateDates: Array<{
+      date: string;
+      startTime: string;
+      endTime: string;
+    }>;
+  },
+) {
+  try {
+    const title = event.title.trim();
+    const candidateDates = event.candidateDates.filter((slot) => slot.date);
+    if (!title || candidateDates.length === 0) {
+      return {
+        success: false,
+        message: "イベント名と候補日時を入力してください",
+      };
+    }
+
+    const hasInvalidTime = candidateDates.some(
+      (candidate) =>
+        new Date(`2000-01-01T${candidate.startTime}:00`) >=
+        new Date(`2000-01-01T${candidate.endTime}:00`),
+    );
+    if (hasInvalidTime) {
+      return {
+        success: false,
+        message: "開始時刻が終了時刻より前になるように設定してください。",
+      };
+    }
+
+    const session = await getServerSession(authOptions);
+    const userId =
+      session?.user?.lineUserId ||
+      session?.user?.id ||
+      (process.env.LOCAL_GUEST_LOGIN === "true" ? "local_dev_user" : undefined);
+    if (!userId) {
+      return { success: false, message: "ログインが必要です" };
+    }
+
+    const group = await prisma.eventGroup.findUnique({
+      where: { id: groupId },
+      select: { id: true, createdBy: true, inviteToken: true },
+    });
+    if (!group) {
+      return { success: false, message: "イベントグループが見つかりません" };
+    }
+    if (group.createdBy !== userId) {
+      return {
+        success: false,
+        message: "このグループにイベントを追加する権限がありません",
+      };
+    }
+
+    const created = await prisma.event.create({
+      data: {
+        title,
+        description: event.description?.trim() || null,
+        createdBy: userId,
+        groupId: group.id,
+        slots: {
+          create: candidateDates.map((slot) => ({
+            day: new Date(slot.date),
+            startAt: slot.startTime,
+            endAt: slot.endTime,
+          })),
+        },
+      },
+      select: { id: true },
+    });
+
+    revalidatePath("/");
+    revalidatePath("/myEvents");
+    revalidatePath(`/event/group/${group.id}`);
+    revalidatePath(`/participation/group/${group.inviteToken}`);
+
+    return {
+      success: true,
+      eventId: created.id,
+      message: "グループにイベントを追加しました",
+    };
+  } catch (error) {
+    console.error("addEventToGroup error:", error);
+    return { success: false, message: "サーバーエラーが発生しました" };
+  }
+}

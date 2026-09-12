@@ -1,16 +1,28 @@
 "use client";
 
-import { CalendarDays, Copy, ExternalLink } from "lucide-react";
+import { CalendarDays, Copy, ExternalLink, Pencil, Plus } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
+import { addEventToGroup } from "@/app/actions/event/createEvent";
 import type { getOwnedEventGroup } from "@/app/actions/event/getEventGroup";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  createBlankGroupEvent,
+  type GroupEvent,
+  GroupEventEditorModal,
+} from "./GroupEventForm";
 
 type EventGroup = NonNullable<Awaited<ReturnType<typeof getOwnedEventGroup>>>;
 
 export default function EventGroupDetailPage({ group }: { group: EventGroup }) {
+  const router = useRouter();
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftEvent, setDraftEvent] = useState<GroupEvent | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const participationPath = `/participation/group/${group.inviteToken}`;
 
   const copyInviteUrl = async () => {
@@ -22,6 +34,43 @@ export default function EventGroupDetailPage({ group }: { group: EventGroup }) {
     } catch (error) {
       console.error(error);
       toast.error("招待URLのコピーに失敗しました");
+    }
+  };
+
+  const openAddEvent = () => {
+    setDraftEvent(createBlankGroupEvent());
+  };
+
+  const closeAddEvent = () => {
+    if (isSaving) {
+      return;
+    }
+    setDraftEvent(null);
+  };
+
+  const saveAddedEvent = async () => {
+    if (!draftEvent) {
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const result = await addEventToGroup(group.id, {
+        title: draftEvent.title,
+        description: draftEvent.description,
+        candidateDates: draftEvent.candidateDates,
+      });
+      if (result.success) {
+        toast.success(result.message);
+        setDraftEvent(null);
+        router.refresh();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("イベントの追加に失敗しました");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -63,6 +112,15 @@ export default function EventGroupDetailPage({ group }: { group: EventGroup }) {
               </Link>
             </Button>
           </div>
+          <Button
+            type="button"
+            variant={isEditing ? "default" : "outline"}
+            onClick={() => setIsEditing((current) => !current)}
+            className="w-full"
+          >
+            <Pencil className="size-4" />
+            {isEditing ? "編集を閉じる" : "編集"}
+          </Button>
         </CardContent>
       </Card>
 
@@ -106,8 +164,32 @@ export default function EventGroupDetailPage({ group }: { group: EventGroup }) {
               <ExternalLink className="size-4 shrink-0 text-gray-400" />
             </Link>
           ))}
+          {isEditing && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={openAddEvent}
+              className="h-11 w-full border-dashed border-blue-300 text-blue-700 hover:border-blue-500 hover:bg-blue-50"
+            >
+              <Plus className="size-4" />
+              イベントを追加
+            </Button>
+          )}
         </CardContent>
       </Card>
+
+      {draftEvent && (
+        <GroupEventEditorModal
+          event={draftEvent}
+          eventNumber={group.events.length + 1}
+          title="イベントを追加"
+          saveLabel="グループに追加"
+          saving={isSaving}
+          onChange={setDraftEvent}
+          onCancel={closeAddEvent}
+          onSave={saveAddedEvent}
+        />
+      )}
     </div>
   );
 }
